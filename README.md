@@ -2,7 +2,9 @@
 
 ## Sobre o projeto
 
-Repositório destinado ao desenvolvimento do MVP DataSpaces.
+MVP acadêmico para simular a monetização de dados de logística e transporte em um Data Space.
+
+O sistema terá duas organizações, duas APIs, planos simples e premium, validação acadêmica de DIDs e VCs e cobrança por assinatura e por requisição.
 
 ## Status
 
