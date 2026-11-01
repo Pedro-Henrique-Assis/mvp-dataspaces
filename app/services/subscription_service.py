@@ -6,6 +6,16 @@ from app.repositories.subscriptions import create, find_active
 from app.services.credential_service import validate_credential
 
 
+def validate_subscription_request(consumer, api, credential_valid, existing_subscription):
+    if not credential_valid:
+        return False, "A organização não possui uma credencial válida."
+    if consumer["id"] == api["provider_org_id"]:
+        return False, "A organização não pode assinar a própria API."
+    if existing_subscription:
+        return False, "Já existe uma assinatura ativa para esta API."
+    return True, "Solicitação de assinatura válida."
+
+
 def create_subscription(consumer_id, api_id, plan_id, trusted_issuer):
     consumer = get_organization(consumer_id)
     api = get_by_id(api_id)

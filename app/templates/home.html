@@ -5,5 +5,51 @@
     <p class="eyebrow">Data Spaces · Logística e transporte</p>
     <h1>Monetização de dados por APIs</h1>
     <p>Simulação local de assinaturas, acesso a dados e cobrança por requisição.</p>
+    <div class="hero-actions">
+        {% if session.get('organization_id') %}
+        <a class="button" href="{{ url_for('main.dashboard') }}">Abrir painel</a>
+        <a class="button button-secondary" href="{{ url_for('subscriptions.index') }}">Ver planos</a>
+        {% else %}
+        <a class="button" href="{{ url_for('auth.login') }}">Entrar como organização</a>
+        <a class="button button-secondary" href="#apis">Explorar APIs</a>
+        {% endif %}
+    </div>
+</section>
+
+<section class="api-section" id="apis">
+    <div class="section-heading">
+        <div>
+            <p class="eyebrow">Catálogo</p>
+            <h2>APIs disponíveis</h2>
+        </div>
+        {% if session.get('organization_id') %}
+        <a class="text-link" href="{{ url_for('subscriptions.index') }}">Gerenciar assinaturas</a>
+        {% endif %}
+    </div>
+    <div class="grid">
+        {% for api in apis %}
+        <article class="card api-card">
+            <div>
+                <p class="api-provider">{{ api.provider_name }}</p>
+                <h3>{{ api.name }}</h3>
+                <p>{{ api.description }}</p>
+            </div>
+            <div class="card-actions">
+                {% if session.get('organization_id') %}
+                <a class="button" href="{{ url_for('subscriptions.index') }}">Ver planos</a>
+                {% else %}
+                <a class="button" href="{{ url_for('auth.login') }}">Entrar para assinar</a>
+                {% endif %}
+                {% if api.slug == 'entregas' %}
+                <a class="text-link" href="{{ url_for('api_data.deliveries', level='basic') }}">Consultar entregas básicas</a>
+                {% elif api.slug == 'veiculos' %}
+                <a class="text-link" href="{{ url_for('api_data.vehicles', level='basic') }}">Consultar veículos básicos</a>
+                {% endif %}
+            </div>
+        </article>
+        {% else %}
+        <p>Nenhuma API disponível no momento.</p>
+        {% endfor %}
+    </div>
 </section>
 {% endblock %}
