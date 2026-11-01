@@ -1,0 +1,17 @@
+{% extends "base.html" %}
+{% block title %}Identificação{% endblock %}
+{% block content %}
+<section class="card">
+    <h1>Identificar organização</h1>
+    <p>Selecione uma organização com DID e VC válidos.</p>
+    <form method="post">
+        <label for="organization_id">Organização</label>
+        <select id="organization_id" name="organization_id" required>
+            {% for organization in organizations %}
+            <option value="{{ organization.id }}">{{ organization.name }} — {{ organization.did }}</option>
+            {% endfor %}
+        </select>
+        <button class="button" type="submit">Entrar</button>
+    </form>
+</section>
+{% endblock %}

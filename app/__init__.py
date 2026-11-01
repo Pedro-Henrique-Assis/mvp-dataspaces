@@ -12,4 +12,5 @@ def create_app(test_config=None):
         app.config.update(test_config)
 
     app.register_blueprint(main_blueprint)
+    app.register_blueprint(auth_blueprint)
     return app
