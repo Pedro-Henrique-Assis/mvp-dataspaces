@@ -4,6 +4,7 @@ from app.api_routes import api_blueprint
 from app.auth_routes import auth_blueprint
 from app.config import Config
 from app.routes import main_blueprint
+from app.usage_routes import usage_blueprint
 
 
 def create_app(test_config=None):
@@ -16,4 +17,5 @@ def create_app(test_config=None):
     app.register_blueprint(main_blueprint)
     app.register_blueprint(auth_blueprint)
     app.register_blueprint(api_blueprint)
+    app.register_blueprint(usage_blueprint)
     return app
