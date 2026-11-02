@@ -1,0 +1,38 @@
+@startuml
+class Organization {
+  id
+  name
+  did
+}
+class VerifiableCredential {
+  issuer_did
+  subject_did
+  expires_at
+  status
+}
+class ApiProduct {
+  name
+  slug
+}
+class Plan {
+  subscription_price_usd
+  request_price_usd
+  max_access_level
+}
+class Subscription {
+  status
+  started_at
+}
+class ApiRequest {
+  access_level
+  amount_usd
+  requested_at
+}
+
+Organization "1" -- "1" VerifiableCredential
+Organization "1" -- "0..*" ApiProduct : fornece
+Organization "1" -- "0..*" Subscription : contrata
+ApiProduct "1" -- "0..*" Subscription
+Plan "1" -- "0..*" Subscription
+Subscription "1" -- "0..*" ApiRequest
+@enduml
