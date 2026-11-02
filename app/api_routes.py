@@ -16,8 +16,14 @@ api_blueprint = Blueprint("api_data", __name__)
 @api_blueprint.get("/api/entregas/<level>")
 @login_required
 def deliveries(level):
+    if level not in {"basic", "premium"}:
+        return jsonify({"error": "Nível de acesso inválido."}), 400
     api = get_by_slug("entregas")
+    if not api:
+        return jsonify({"error": "API não encontrada."}), 404
     subscription = find_active(current_organization_id(), api["id"])
+    if not subscription:
+        return jsonify({"error": "Assinatura ativa não encontrada."}), 403
     allowed, message = authorize_request(subscription, level)
     if not allowed:
         return jsonify({"error": message}), 403
@@ -29,8 +35,14 @@ def deliveries(level):
 @api_blueprint.get("/api/veiculos/<level>")
 @login_required
 def vehicles(level):
+    if level not in {"basic", "premium"}:
+        return jsonify({"error": "Nível de acesso inválido."}), 400
     api = get_by_slug("veiculos")
+    if not api:
+        return jsonify({"error": "API não encontrada."}), 404
     subscription = find_active(current_organization_id(), api["id"])
+    if not subscription:
+        return jsonify({"error": "Assinatura ativa não encontrada."}), 403
     allowed, message = authorize_request(subscription, level)
     if not allowed:
         return jsonify({"error": message}), 403
