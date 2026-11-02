@@ -57,6 +57,13 @@ Com o servidor ativo, abra `http://127.0.0.1:5000` no navegador. Entre usando um
 
 Para encerrar o servidor, pressione `Ctrl+C` no terminal.
 
+## Documentação
+
+- [Configuração local](docs/setup.md)
+- [Roteiro da demonstração](docs/demo.md)
+- [Diagramas UML](docs/uml/)
+- [Planejamento dos commits](commits/)
+
 ## Integrantes
 Ana Marta de Souza Santos
 Alex Akio Nishimura Junior
