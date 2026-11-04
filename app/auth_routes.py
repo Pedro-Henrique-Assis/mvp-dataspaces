@@ -14,7 +14,7 @@ def login():
     if request.method == "POST":
         organization_id = request.form.get("organization_id", type=int)
         organization = get_by_id(organization_id) if organization_id else None
-        if not organization or not organization["active"]:
+        if not organization or organization["status"] != "active":
             flash("Organização não encontrada.", "error")
             return render_template("login.html", organizations=organizations)
         credential = get_for_organization(organization["id"])

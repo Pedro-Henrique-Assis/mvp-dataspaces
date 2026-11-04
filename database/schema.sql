@@ -5,8 +5,18 @@ USE dataspaces_mvp;
 CREATE TABLE organizations (
     id INT AUTO_INCREMENT PRIMARY KEY,
     name VARCHAR(120) NOT NULL,
+    cnpj CHAR(14) NOT NULL UNIQUE,
+    email VARCHAR(160) NOT NULL UNIQUE,
+    password_hash VARCHAR(255) NOT NULL,
     did VARCHAR(180) NOT NULL UNIQUE,
-    active BOOLEAN NOT NULL DEFAULT TRUE
+    sector VARCHAR(40) NOT NULL,
+    role VARCHAR(10) NOT NULL,
+    contact_name VARCHAR(120) NOT NULL,
+    description VARCHAR(255),
+    website VARCHAR(160),
+    status VARCHAR(20) NOT NULL DEFAULT 'pending',
+    rejection_reason VARCHAR(255),
+    created_at DATETIME NOT NULL DEFAULT CURRENT_TIMESTAMP
 );
 
 CREATE TABLE verifiable_credentials (
