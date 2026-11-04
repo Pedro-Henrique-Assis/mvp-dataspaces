@@ -20,14 +20,16 @@ def create_subscription(consumer_id, api_id, plan_id, trusted_issuer):
     consumer = get_organization(consumer_id)
     api = get_api(api_id)
     plan = get_plan(plan_id)
-    if not api:
+    if not api or api["provider_status"] != "active":
         return False, "API não encontrada."
     if not plan:
         return False, "Plano não encontrado."
     credential = get_for_organization(consumer_id)
     valid_credential, message = validate_credential(
-        credential, consumer, trusted_issuer
+        credential, consumer, trusted_issuer, required_role="consumer"
     )
+    if not valid_credential:
+        return False, message
     existing = find_active(consumer_id, api_id)
     allowed, message = validate_subscription_request(
         consumer, api, valid_credential, existing

@@ -102,6 +102,12 @@ class ApiRoutesTest(unittest.TestCase):
         self.assertEqual(response.status_code, 403)
         register.assert_not_called()
 
+    def test_organization_without_consumer_role_is_forbidden(self):
+        provider_only = dict(CREDENTIAL, role_consumer=False)
+        response, register = self.request(credential=provider_only)
+        self.assertEqual(response.status_code, 403)
+        register.assert_not_called()
+
     def test_without_subscription_is_forbidden(self):
         response, register = self.request(subscription=None)
         self.assertEqual(response.status_code, 403)

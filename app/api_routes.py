@@ -30,6 +30,7 @@ def api_data(slug):
         get_for_organization(organization_id),
         get_organization(organization_id),
         current_app.config["TRUSTED_ISSUER_DID"],
+        required_role="consumer",
     )
     if not valid:
         return jsonify({"error": message}), 403

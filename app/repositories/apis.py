@@ -20,7 +20,12 @@ def get_by_id(api_id):
     connection = get_connection()
     cursor = connection.cursor(dictionary=True)
     try:
-        cursor.execute("SELECT * FROM apis WHERE id = %s", (api_id,))
+        cursor.execute(
+            "SELECT a.*, o.status AS provider_status "
+            "FROM apis a JOIN organizations o ON o.id = a.provider_org_id "
+            "WHERE a.id = %s",
+            (api_id,),
+        )
         return cursor.fetchone()
     finally:
         cursor.close()
