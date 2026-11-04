@@ -1,4 +1,5 @@
 import unittest
+from datetime import date
 
 from unittest.mock import patch
 
@@ -97,6 +98,69 @@ class CatalogTest(unittest.TestCase):
     def test_menu_has_catalog_link_for_visitor(self):
         html = self.get([]).get_data(as_text=True)
         self.assertIn('href="/organizations"', html)
+
+
+ORGANIZATION = {
+    "id": 1,
+    "name": "TransLog Brasil",
+    "sector": "logistics",
+    "role": "both",
+    "contact_name": "Equipe TransLog",
+    "website": "https://translog.example",
+    "did": "did:example:translog",
+    "description": None,
+    "status": "active",
+}
+CREDENTIAL = {"issued_at": date(2026, 1, 1), "expires_at": date(2030, 12, 31)}
+API = {
+    "id": 10,
+    "name": "API de entregas",
+    "description": "Acompanhamento de entregas.",
+    "basic_response": '[{"tracking_code": "SEGREDO-001", "status": "ok"}]',
+    "premium_response": '[{"tracking_code": "SEGREDO-001", "status": "ok", "route_distance_km": 98.5}]',
+    "policy_purpose": "Acompanhamento logístico",
+    "policy_allows_redistribution": 0,
+    "policy_retention_days": 90,
+    "policy_notes": "Sem repasse a terceiros.",
+}
+PLANS = [
+    {"id": 1, "name": "Plano simples", "subscription_price_usd": 10, "request_price_usd": 0.5, "max_access_level": "basic"},
+    {"id": 2, "name": "Plano premium", "subscription_price_usd": 25, "request_price_usd": 0.2, "max_access_level": "premium"},
+]
+
+
+class OrganizationDetailTest(unittest.TestCase):
+    def setUp(self):
+        self.client = create_app({"TESTING": True, "SECRET_KEY": "test"}).test_client()
+
+    def get(self, organization=ORGANIZATION, logged_in=None):
+        if logged_in:
+            with self.client.session_transaction() as session:
+                session["organization_id"] = logged_in
+        with patch.object(organization_routes, "get_organization", return_value=organization),                 patch.object(organization_routes, "get_credential", return_value=CREDENTIAL),                 patch.object(organization_routes, "list_apis_for_provider", return_value=[API]),                 patch.object(organization_routes, "list_plans", return_value=PLANS):
+            return self.client.get("/organizations/1")
+
+    def test_shows_organization_data_and_credential_validity(self):
+        html = self.get().get_data(as_text=True)
+        for text in ["TransLog Brasil", "Equipe TransLog", "https://translog.example",
+                     "did:example:translog", "2026-01-01", "2030-12-31"]:
+            self.assertIn(text, html)
+
+    def test_missing_or_inactive_organization_is_404(self):
+        for organization in [None, dict(ORGANIZATION, status="pending"), dict(ORGANIZATION, status="rejected")]:
+            self.assertEqual(self.get(organization).status_code, 404)
+
+    def test_shows_plans_policy_and_fields_but_not_data(self):
+        html = self.get().get_data(as_text=True)
+        for text in ["API de entregas", "Plano simples", "Plano premium", "Acompanhamento logístico",
+                     "90 dias", "Sem repasse a terceiros.", "tracking_code", "status", "route_distance_km"]:
+            self.assertIn(text, html)
+        self.assertNotIn("SEGREDO-001", html)
+
+    def test_subscribe_button_depends_on_login(self):
+        self.assertNotIn("/subscriptions?api_id=10", self.get().get_data(as_text=True))
+        self.assertNotIn("/subscriptions?api_id=10", self.get(logged_in=1).get_data(as_text=True))
+        self.assertIn("/subscriptions?api_id=10", self.get(logged_in=2).get_data(as_text=True))
 
 
 if __name__ == "__main__":

@@ -9,7 +9,7 @@
         <p>{{ sectors[organization.sector] }} · {{ roles[organization.role] }}</p>
         {% if organization.description %}<p>{{ organization.description }}</p>{% endif %}
         <p>{{ organization.api_count }} {{ 'API' if organization.api_count == 1 else 'APIs' }}</p>
-        <a class="button" href="/organizations/{{ organization.id }}">Ver detalhes</a>
+        <a class="button" href="{{ url_for('organizations.show', organization_id=organization.id) }}">Ver detalhes</a>
     </article>
     {% else %}
     <p>Nenhuma organização ativa no momento.</p>

@@ -46,3 +46,16 @@ def get_by_slug(slug):
     finally:
         cursor.close()
         connection.close()
+
+def list_for_provider(provider_org_id):
+    connection = get_connection()
+    cursor = connection.cursor(dictionary=True)
+    try:
+        cursor.execute(
+            "SELECT * FROM apis WHERE provider_org_id = %s ORDER BY name",
+            (provider_org_id,),
+        )
+        return cursor.fetchall()
+    finally:
+        cursor.close()
+        connection.close()
