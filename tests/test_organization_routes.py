@@ -19,6 +19,13 @@ class RegistrationFormTest(unittest.TestCase):
         for role in ["consumer", "provider", "both"]:
             self.assertIn(f'value="{role}"', html)
 
+    def test_form_has_api_block_that_can_be_hidden(self):
+        html = self.client.get("/organizations/new").get_data(as_text=True)
+        self.assertIn('id="api-fields"', html)
+        for field in ["api_name", "api_description", "basic_response", "premium_response",
+                      "policy_purpose", "policy_allows_redistribution", "policy_retention_days", "policy_notes"]:
+            self.assertIn(f'name="{field}"', html)
+
     def test_login_page_links_to_registration(self):
         html = self.client.get("/login").get_data(as_text=True)
         self.assertIn("Registre-se", html)
