@@ -27,7 +27,7 @@ def login():
     return render_template("login.html")
 
 
-@auth_blueprint.get("/logout")
+@auth_blueprint.post("/logout")
 def logout():
     session.clear()
     flash("Sessão encerrada.", "success")

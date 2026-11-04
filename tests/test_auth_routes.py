@@ -40,6 +40,21 @@ class AuthRoutesTest(unittest.TestCase):
         with self.client.session_transaction() as session:
             self.assertNotIn("organization_id", session)
 
+    def test_logout_requires_post(self):
+        with self.client.session_transaction() as session:
+            session["organization_id"] = 3
+        self.assertEqual(self.client.get("/logout").status_code, 405)
+        with self.client.session_transaction() as session:
+            self.assertEqual(session["organization_id"], 3)
+
+    def test_logout_post_clears_session(self):
+        with self.client.session_transaction() as session:
+            session["organization_id"] = 3
+        response = self.client.post("/logout")
+        self.assertEqual(response.status_code, 302)
+        with self.client.session_transaction() as session:
+            self.assertNotIn("organization_id", session)
+
 
 if __name__ == "__main__":
     unittest.main()
