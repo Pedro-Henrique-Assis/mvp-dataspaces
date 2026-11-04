@@ -2,6 +2,7 @@ from flask import Blueprint, jsonify, render_template
 
 from app.auth import current_organization_id, login_required
 from app.repositories.apis import list_public
+from app.repositories.credentials import get_for_organization as get_credential
 from app.repositories.subscriptions import list_for_consumer
 
 
@@ -19,6 +20,7 @@ def dashboard():
     return render_template(
         "dashboard.html",
         apis=list_public(),
+        credential=get_credential(current_organization_id()),
         subscriptions=list_for_consumer(current_organization_id()),
     )
 
