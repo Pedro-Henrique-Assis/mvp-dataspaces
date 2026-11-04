@@ -1,7 +1,7 @@
 from flask import Blueprint, current_app, flash, redirect, render_template, request, url_for
 
 from app.auth import current_organization_id, login_required
-from app.repositories.apis import list_all
+from app.repositories.apis import list_public
 from app.repositories.plans import list_all as list_plans
 from app.services.subscription_service import create_subscription
 
@@ -12,7 +12,7 @@ subscriptions_blueprint = Blueprint("subscriptions", __name__, url_prefix="/subs
 @subscriptions_blueprint.get("/")
 @login_required
 def index():
-    return render_template("subscriptions.html", apis=list_all(), plans=list_plans())
+    return render_template("subscriptions.html", apis=list_public(), plans=list_plans())
 
 
 @subscriptions_blueprint.post("/create")
