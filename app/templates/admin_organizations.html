@@ -25,6 +25,12 @@
     <p>Resposta do plano premium</p>
     <pre>{{ api.premium_pretty }}</pre>
     {% endfor %}
+
+    {% if organization.status == 'pending' %}
+    <form method="post" action="{{ url_for('admin.approve', organization_id=organization.id) }}">
+        <button class="button" type="submit">Aprovar</button>
+    </form>
+    {% endif %}
 </section>
 {% else %}
 <p>Nenhum cadastro nesta lista.</p>

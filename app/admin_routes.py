@@ -1,9 +1,10 @@
 import json
 
-from flask import Blueprint, render_template, request
+from flask import Blueprint, current_app, flash, redirect, render_template, request, url_for
 
 from app.auth import admin_required, current_admin_id
 from app.repositories.organizations import count_by_status, list_by_status
+from app.services.approval_service import approve_organization
 
 
 admin_blueprint = Blueprint("admin", __name__, url_prefix="/admin")
@@ -34,3 +35,11 @@ def organizations():
             api["basic_pretty"] = pretty_json(api["basic_response"])
             api["premium_pretty"] = pretty_json(api["premium_response"])
     return render_template("admin_organizations.html", organizations=items, status=status)
+
+
+@admin_blueprint.post("/organizations/<int:organization_id>/approval")
+@admin_required
+def approve(organization_id):
+    ok, message = approve_organization(organization_id, current_app.config["TRUSTED_ISSUER_DID"])
+    flash(message, "success" if ok else "error")
+    return redirect(url_for("admin.organizations"))

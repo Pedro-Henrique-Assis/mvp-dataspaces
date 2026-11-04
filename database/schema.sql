@@ -33,6 +33,7 @@ CREATE TABLE verifiable_credentials (
     subject_did VARCHAR(180) NOT NULL,
     role_provider BOOLEAN NOT NULL DEFAULT FALSE,
     role_consumer BOOLEAN NOT NULL DEFAULT FALSE,
+    issued_at DATE NOT NULL,
     expires_at DATE NOT NULL,
     status VARCHAR(20) NOT NULL DEFAULT 'active',
     FOREIGN KEY (organization_id) REFERENCES organizations(id)

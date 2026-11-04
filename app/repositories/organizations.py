@@ -108,3 +108,32 @@ def list_by_status(status):
     finally:
         cursor.close()
         connection.close()
+
+
+def activate(organization_id, credential):
+    connection = get_connection()
+    cursor = connection.cursor()
+    try:
+        cursor.execute(
+            "UPDATE organizations SET status = 'active' "
+            "WHERE id = %s AND status = 'pending'",
+            (organization_id,),
+        )
+        if cursor.rowcount == 0:
+            connection.rollback()
+            return False
+        cursor.execute(
+            "INSERT INTO verifiable_credentials "
+            "(organization_id, issuer_did, subject_did, role_provider, role_consumer, issued_at, expires_at) "
+            "VALUES (%(organization_id)s, %(issuer_did)s, %(subject_did)s, %(role_provider)s, "
+            "%(role_consumer)s, %(issued_at)s, %(expires_at)s)",
+            dict(credential, organization_id=organization_id),
+        )
+        connection.commit()
+        return True
+    except Exception:
+        connection.rollback()
+        raise
+    finally:
+        cursor.close()
+        connection.close()

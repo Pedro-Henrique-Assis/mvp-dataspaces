@@ -17,10 +17,10 @@ VALUES
  'Transportadora com frota própria de caminhões e vans.', 'active');
 
 INSERT INTO verifiable_credentials
-    (organization_id, issuer_did, subject_did, role_provider, role_consumer, expires_at)
+    (organization_id, issuer_did, subject_did, role_provider, role_consumer, issued_at, expires_at)
 VALUES
-(1, 'did:example:dataspace-authority', 'did:example:translog', TRUE, TRUE, '2030-12-31'),
-(2, 'did:example:dataspace-authority', 'did:example:cargacerta', TRUE, TRUE, '2030-12-31');
+(1, 'did:example:dataspace-authority', 'did:example:translog', TRUE, TRUE, '2026-01-01', '2030-12-31'),
+(2, 'did:example:dataspace-authority', 'did:example:cargacerta', TRUE, TRUE, '2026-01-01', '2030-12-31');
 
 INSERT INTO apis
     (id, provider_org_id, name, slug, description, basic_response, premium_response,

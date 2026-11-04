@@ -71,5 +71,42 @@ class AdminQueueTest(unittest.TestCase):
         self.assertIn("Nenhum cadastro", html)
 
 
+class AdminDecisionTest(unittest.TestCase):
+    def setUp(self):
+        self.client = create_app({"TESTING": True, "SECRET_KEY": "test"}).test_client()
+
+    def login_admin(self):
+        with self.client.session_transaction() as session:
+            session["admin_id"] = 1
+
+    def flashes(self):
+        with self.client.session_transaction() as session:
+            return session["_flashes"]
+
+    def test_approval_requires_admin(self):
+        response = self.client.post("/admin/organizations/5/approval")
+        self.assertEqual(response.status_code, 302)
+        self.assertTrue(response.headers["Location"].endswith("/login"))
+
+    def test_approval_is_post_only(self):
+        self.login_admin()
+        self.assertEqual(self.client.get("/admin/organizations/5/approval").status_code, 405)
+
+    def test_approve_flashes_success_and_returns_to_queue(self):
+        self.login_admin()
+        with patch.object(admin_routes, "approve_organization", return_value=(True, "ok")) as approve:
+            response = self.client.post("/admin/organizations/5/approval")
+        self.assertEqual(approve.call_args.args[0], 5)
+        self.assertTrue(response.headers["Location"].endswith("/admin/organizations"))
+        self.assertEqual(self.flashes()[0][0], "success")
+
+    def test_failed_approval_flashes_error(self):
+        self.login_admin()
+        message = "Somente cadastros pendentes podem ser aprovados."
+        with patch.object(admin_routes, "approve_organization", return_value=(False, message)):
+            self.client.post("/admin/organizations/5/approval")
+        self.assertEqual(self.flashes()[0], ("error", message))
+
+
 if __name__ == "__main__":
     unittest.main()
