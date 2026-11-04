@@ -1,5 +1,9 @@
 import unittest
+from unittest.mock import patch
 
+from werkzeug.security import check_password_hash
+
+from app.services import registration_service as service
 from app.services.registration_service import validate_organization
 
 
@@ -60,6 +64,46 @@ class ValidateOrganizationTest(unittest.TestCase):
         self.assertIn("Razão social deve ter até 120 caracteres.", errors)
         self.assertIn("Site deve ter até 160 caracteres.", errors)
         self.assertIn("Descrição deve ter até 255 caracteres.", errors)
+
+
+class RegisterOrganizationTest(unittest.TestCase):
+    def register(self, form, email_org=None, email_admin=None, cnpj_org=None):
+        with patch.object(service, "get_organization_by_email", return_value=email_org),                 patch.object(service, "get_admin_by_email", return_value=email_admin),                 patch.object(service, "get_organization_by_cnpj", return_value=cnpj_org),                 patch.object(service, "create_with_api") as create:
+            return service.register_organization(form), create
+
+    def test_saves_pending_organization_with_clean_data(self):
+        form = valid_form(email=" Contato@RotaCerta.com.br ")
+        (ok, errors), create = self.register(form)
+        self.assertTrue(ok)
+        self.assertEqual(errors, [])
+        org, api = create.call_args.args
+        self.assertEqual(org["cnpj"], "11222333000181")
+        self.assertEqual(org["email"], "contato@rotacerta.com.br")
+        self.assertEqual(org["did"], "did:example:11222333000181")
+        self.assertTrue(check_password_hash(org["password_hash"], "senha1234"))
+        self.assertNotIn("password", org)
+        self.assertIsNone(api)
+
+    def test_invalid_form_saves_nothing(self):
+        (ok, errors), create = self.register(valid_form(cnpj="123"))
+        self.assertFalse(ok)
+        self.assertIn("CNPJ inválido.", errors)
+        create.assert_not_called()
+
+    def test_duplicate_email_in_organizations(self):
+        (ok, errors), create = self.register(valid_form(), email_org={"id": 1})
+        self.assertFalse(ok)
+        self.assertEqual(errors, ["E-mail já cadastrado."])
+        create.assert_not_called()
+
+    def test_duplicate_email_in_admins(self):
+        (_, errors), _ = self.register(valid_form(), email_admin={"id": 1})
+        self.assertEqual(errors, ["E-mail já cadastrado."])
+
+    def test_duplicate_cnpj(self):
+        (_, errors), create = self.register(valid_form(), cnpj_org={"id": 1})
+        self.assertEqual(errors, ["CNPJ já cadastrado."])
+        create.assert_not_called()
 
 
 if __name__ == "__main__":

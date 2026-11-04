@@ -1,3 +1,13 @@
+from werkzeug.security import generate_password_hash
+
+from app.repositories.admins import get_by_email as get_admin_by_email
+from app.repositories.organizations import (
+    create_with_api,
+    get_by_cnpj as get_organization_by_cnpj,
+    get_by_email as get_organization_by_email,
+)
+
+
 def only_digits(value):
     return "".join(char for char in value or "" if char.isdigit())
 
@@ -68,3 +78,33 @@ def validate_organization(form):
         if len(form.get(field, "").strip()) > size:
             errors.append(f"{label} deve ter até {size} caracteres.")
     return errors
+
+
+def register_organization(form):
+    errors = validate_organization(form)
+    if errors:
+        return False, errors
+
+    email = form["email"].strip().lower()
+    cnpj = only_digits(form["cnpj"])
+    if get_organization_by_email(email) or get_admin_by_email(email):
+        errors.append("E-mail já cadastrado.")
+    if get_organization_by_cnpj(cnpj):
+        errors.append("CNPJ já cadastrado.")
+    if errors:
+        return False, errors
+
+    organization = {
+        "name": form["name"].strip(),
+        "cnpj": cnpj,
+        "email": email,
+        "password_hash": generate_password_hash(form["password"]),
+        "did": f"did:example:{cnpj}",
+        "sector": form["sector"],
+        "role": form["role"],
+        "contact_name": form["contact_name"].strip(),
+        "description": form.get("description", "").strip() or None,
+        "website": form.get("website", "").strip() or None,
+    }
+    create_with_api(organization, None)
+    return True, []
