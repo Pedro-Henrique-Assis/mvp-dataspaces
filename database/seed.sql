@@ -22,9 +22,20 @@ VALUES
 (1, 'did:example:dataspace-authority', 'did:example:translog', TRUE, TRUE, '2030-12-31'),
 (2, 'did:example:dataspace-authority', 'did:example:cargacerta', TRUE, TRUE, '2030-12-31');
 
-INSERT INTO apis (id, provider_org_id, name, slug, description) VALUES
-(1, 1, 'API de entregas', 'entregas', 'Acompanhamento de entregas e rotas.'),
-(2, 2, 'API de veículos', 'veiculos', 'Disponibilidade da frota de transporte.');
+INSERT INTO apis
+    (id, provider_org_id, name, slug, description, basic_response, premium_response,
+     policy_purpose, policy_allows_redistribution, policy_retention_days, policy_notes)
+VALUES
+(1, 1, 'API de entregas', 'entregas', 'Acompanhamento de entregas e rotas.',
+ '[{"tracking_code": "ENT-001", "origin": "São Paulo", "destination": "Campinas", "status": "Em trânsito"}, {"tracking_code": "ENT-002", "origin": "Curitiba", "destination": "Joinville", "status": "Em preparação"}]',
+ '[{"tracking_code": "ENT-001", "origin": "São Paulo", "destination": "Campinas", "status": "Em trânsito", "estimated_delivery": "2030-11-03", "route_distance_km": 98.5}, {"tracking_code": "ENT-002", "origin": "Curitiba", "destination": "Joinville", "status": "Em preparação", "estimated_delivery": "2030-11-05", "route_distance_km": 132.0}]',
+ 'Acompanhamento logístico das entregas contratadas.', FALSE, 90,
+ 'Os dados não podem ser repassados a terceiros.'),
+(2, 2, 'API de veículos', 'veiculos', 'Disponibilidade da frota de transporte.',
+ '[{"vehicle_code": "VEI-001", "vehicle_type": "Caminhão", "available": true}, {"vehicle_code": "VEI-002", "vehicle_type": "Van", "available": false}]',
+ '[{"vehicle_code": "VEI-001", "vehicle_type": "Caminhão", "available": true, "capacity_kg": 12000.0, "current_location": "São Paulo", "next_available_date": "2030-11-02"}, {"vehicle_code": "VEI-002", "vehicle_type": "Van", "available": false, "capacity_kg": 1800.0, "current_location": "Curitiba", "next_available_date": "2030-11-06"}]',
+ 'Planejamento de transporte com base na disponibilidade da frota.', FALSE, 60,
+ 'Uso restrito ao planejamento interno da organização consumidora.');
 
 INSERT INTO plans (id, code, name, subscription_price_usd, request_price_usd, max_access_level) VALUES
 (1, 'simple', 'Plano simples', 10.00, 0.50, 'basic'),

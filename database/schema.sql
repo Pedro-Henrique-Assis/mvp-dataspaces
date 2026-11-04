@@ -44,6 +44,13 @@ CREATE TABLE apis (
     name VARCHAR(120) NOT NULL,
     slug VARCHAR(60) NOT NULL UNIQUE,
     description VARCHAR(255) NOT NULL,
+    basic_response TEXT NOT NULL,
+    premium_response TEXT NOT NULL,
+    policy_purpose VARCHAR(255) NOT NULL,
+    policy_allows_redistribution BOOLEAN NOT NULL DEFAULT FALSE,
+    policy_retention_days INT NOT NULL,
+    policy_notes VARCHAR(500),
+    created_at DATETIME NOT NULL DEFAULT CURRENT_TIMESTAMP,
     FOREIGN KEY (provider_org_id) REFERENCES organizations(id)
 );
 
