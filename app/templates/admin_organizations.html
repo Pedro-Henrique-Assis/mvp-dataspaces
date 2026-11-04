@@ -1,5 +1,32 @@
 {% extends "base.html" %}
 {% block title %}Aprovações{% endblock %}
 {% block content %}
-<h1>Aprovações</h1>
+<h1>Cadastros de organizações</h1>
+<nav class="main-nav" aria-label="Filtro de status">
+    {% for value, label in [('pending', 'Pendentes'), ('active', 'Ativas'), ('rejected', 'Rejeitadas')] %}
+    {% if value == status %}<strong>{{ label }}</strong>{% else %}<a href="{{ url_for('admin.organizations', status=value) }}">{{ label }}</a>{% endif %}
+    {% endfor %}
+</nav>
+
+{% for organization in organizations %}
+<section class="card">
+    <h2>{{ organization.name }}</h2>
+    <p>CNPJ {{ organization.cnpj }} · {{ organization.email }} · setor {{ organization.sector }} · papel {{ organization.role }}</p>
+    <p>Responsável: {{ organization.contact_name }}{% if organization.website %} · {{ organization.website }}{% endif %}</p>
+    {% if organization.description %}<p>{{ organization.description }}</p>{% endif %}
+    {% if organization.rejection_reason %}<p>Motivo da rejeição: {{ organization.rejection_reason }}</p>{% endif %}
+
+    {% for api in organization.apis %}
+    <h3>{{ api.name }}</h3>
+    <p>{{ api.description }}</p>
+    <p>Finalidade: {{ api.policy_purpose }} · redistribuição: {{ 'sim' if api.policy_allows_redistribution else 'não' }} · retenção: {{ api.policy_retention_days }} dias{% if api.policy_notes %} · {{ api.policy_notes }}{% endif %}</p>
+    <p>Resposta do plano básico</p>
+    <pre>{{ api.basic_pretty }}</pre>
+    <p>Resposta do plano premium</p>
+    <pre>{{ api.premium_pretty }}</pre>
+    {% endfor %}
+</section>
+{% else %}
+<p>Nenhum cadastro nesta lista.</p>
+{% endfor %}
 {% endblock %}

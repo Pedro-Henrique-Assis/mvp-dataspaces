@@ -7,7 +7,7 @@ from app import admin_routes, create_app, routes
 class AdminAccessTest(unittest.TestCase):
     def setUp(self):
         self.client = create_app({"TESTING": True, "SECRET_KEY": "test"}).test_client()
-        for target, name, value in [(admin_routes, "count_by_status", 4), (routes, "list_public", [])]:
+        for target, name, value in [(admin_routes, "count_by_status", 4), (admin_routes, "list_by_status", []), (routes, "list_public", [])]:
             patcher = patch.object(target, name, return_value=value)
             patcher.start()
             self.addCleanup(patcher.stop)

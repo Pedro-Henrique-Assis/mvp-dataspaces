@@ -87,3 +87,24 @@ def create_with_api(organization, api):
     finally:
         cursor.close()
         connection.close()
+
+
+def list_by_status(status):
+    connection = get_connection()
+    cursor = connection.cursor(dictionary=True)
+    try:
+        cursor.execute(
+            "SELECT * FROM organizations WHERE status = %s ORDER BY created_at, id",
+            (status,),
+        )
+        organizations = cursor.fetchall()
+        for organization in organizations:
+            cursor.execute(
+                "SELECT * FROM apis WHERE provider_org_id = %s ORDER BY id",
+                (organization["id"],),
+            )
+            organization["apis"] = cursor.fetchall()
+        return organizations
+    finally:
+        cursor.close()
+        connection.close()
