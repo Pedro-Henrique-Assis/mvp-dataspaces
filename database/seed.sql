@@ -1,5 +1,9 @@
 USE dataspaces_mvp;
 
+INSERT INTO admins (id, name, email, password_hash) VALUES
+(1, 'Administrador do Data Space', 'admin@dataspace.local',
+ 'scrypt:32768:8:1$eA5PD8ClZpGAlYwH$34c630161378517afb4ffeb4a67be5b7a421f24e98b6ddfa6a27c2afb76a87d4d027dbd6372ebe2cf2cf72a8864c665cda5f946c1f664007ad2d925d3ce81d96');
+
 INSERT INTO organizations
     (id, name, cnpj, email, password_hash, did, sector, role, contact_name, description, status)
 VALUES

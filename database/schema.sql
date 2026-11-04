@@ -19,6 +19,13 @@ CREATE TABLE organizations (
     created_at DATETIME NOT NULL DEFAULT CURRENT_TIMESTAMP
 );
 
+CREATE TABLE admins (
+    id INT AUTO_INCREMENT PRIMARY KEY,
+    name VARCHAR(120) NOT NULL,
+    email VARCHAR(160) NOT NULL UNIQUE,
+    password_hash VARCHAR(255) NOT NULL
+);
+
 CREATE TABLE verifiable_credentials (
     id INT AUTO_INCREMENT PRIMARY KEY,
     organization_id INT NOT NULL,
