@@ -4,7 +4,7 @@ from flask import Blueprint, current_app, flash, redirect, render_template, requ
 
 from app.auth import admin_required, current_admin_id
 from app.repositories.organizations import count_by_status, list_by_status
-from app.services.approval_service import approve_organization
+from app.services.approval_service import approve_organization, reject_organization
 
 
 admin_blueprint = Blueprint("admin", __name__, url_prefix="/admin")
@@ -41,5 +41,13 @@ def organizations():
 @admin_required
 def approve(organization_id):
     ok, message = approve_organization(organization_id, current_app.config["TRUSTED_ISSUER_DID"])
+    flash(message, "success" if ok else "error")
+    return redirect(url_for("admin.organizations"))
+
+
+@admin_blueprint.post("/organizations/<int:organization_id>/rejection")
+@admin_required
+def reject(organization_id):
+    ok, message = reject_organization(organization_id, request.form.get("reason"))
     flash(message, "success" if ok else "error")
     return redirect(url_for("admin.organizations"))

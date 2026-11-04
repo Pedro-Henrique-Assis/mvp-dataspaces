@@ -1,6 +1,6 @@
 from datetime import date, timedelta
 
-from app.repositories.organizations import activate, get_by_id as get_organization
+from app.repositories.organizations import activate, get_by_id as get_organization, reject
 
 
 def credential_expiration(today):
@@ -25,3 +25,14 @@ def approve_organization(organization_id, trusted_issuer, today=None):
     if not activate(organization_id, credential):
         return False, message
     return True, "Cadastro aprovado."
+
+
+def reject_organization(organization_id, reason):
+    reason = (reason or "").strip()
+    if not reason:
+        return False, "Informe o motivo da rejeição."
+    if len(reason) > 255:
+        return False, "O motivo deve ter até 255 caracteres."
+    if not reject(organization_id, reason):
+        return False, "Somente cadastros pendentes podem ser rejeitados."
+    return True, "Cadastro rejeitado."

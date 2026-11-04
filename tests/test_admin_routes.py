@@ -107,6 +107,34 @@ class AdminDecisionTest(unittest.TestCase):
             self.client.post("/admin/organizations/5/approval")
         self.assertEqual(self.flashes()[0], ("error", message))
 
+    def test_reject_sends_reason_and_returns_to_queue(self):
+        self.login_admin()
+        with patch.object(admin_routes, "reject_organization", return_value=(True, "Cadastro rejeitado.")) as reject:
+            response = self.client.post("/admin/organizations/5/rejection", data={"reason": "CNPJ divergente"})
+        reject.assert_called_once_with(5, "CNPJ divergente")
+        self.assertTrue(response.headers["Location"].endswith("/admin/organizations"))
+        self.assertEqual(self.flashes()[0][0], "success")
+
+    def test_failed_rejection_flashes_error(self):
+        self.login_admin()
+        with patch.object(admin_routes, "reject_organization", return_value=(False, "Informe o motivo da rejeição.")):
+            self.client.post("/admin/organizations/5/rejection", data={})
+        self.assertEqual(self.flashes()[0], ("error", "Informe o motivo da rejeição."))
+
+    def test_rejection_requires_admin(self):
+        self.assertEqual(self.client.post("/admin/organizations/5/rejection").status_code, 302)
+
+    def test_queue_shows_decision_forms_only_for_pending(self):
+        self.login_admin()
+        with patch.object(admin_routes, "count_by_status", return_value=1),                 patch.object(admin_routes, "list_by_status", return_value=[PENDING]):
+            page = self.client.get("/admin/organizations").get_data(as_text=True)
+        self.assertIn("/admin/organizations/5/approval", page)
+        self.assertIn("/admin/organizations/5/rejection", page)
+        self.assertIn('name="reason"', page)
+        with patch.object(admin_routes, "count_by_status", return_value=0),                 patch.object(admin_routes, "list_by_status", return_value=[dict(PENDING, status="active")]):
+            page = self.client.get("/admin/organizations?status=active").get_data(as_text=True)
+        self.assertNotIn("/approval", page)
+
 
 if __name__ == "__main__":
     unittest.main()

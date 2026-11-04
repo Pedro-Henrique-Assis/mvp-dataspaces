@@ -49,5 +49,36 @@ class ApproveOrganizationTest(unittest.TestCase):
         self.assertEqual(message, "Somente cadastros pendentes podem ser aprovados.")
 
 
+def reject(reason, rejected=True):
+    with patch.object(service, "reject", return_value=rejected) as repo_reject:
+        return service.reject_organization(5, reason), repo_reject
+
+
+class RejectOrganizationTest(unittest.TestCase):
+    def test_rejects_with_reason(self):
+        (ok, _), repo_reject = reject("  CNPJ divergente  ")
+        self.assertTrue(ok)
+        repo_reject.assert_called_once_with(5, "CNPJ divergente")
+
+    def test_reason_is_required(self):
+        for reason in ["", "   ", None]:
+            (ok, message), repo_reject = reject(reason)
+            self.assertFalse(ok)
+            self.assertEqual(message, "Informe o motivo da rejeição.")
+            repo_reject.assert_not_called()
+
+    def test_reason_limited_to_255_characters(self):
+        (ok, message), repo_reject = reject("x" * 256)
+        self.assertFalse(ok)
+        self.assertEqual(message, "O motivo deve ter até 255 caracteres.")
+        repo_reject.assert_not_called()
+        self.assertTrue(reject("x" * 255)[0][0])
+
+    def test_only_pending_can_be_rejected(self):
+        (ok, message), _ = reject("motivo", rejected=False)
+        self.assertFalse(ok)
+        self.assertEqual(message, "Somente cadastros pendentes podem ser rejeitados.")
+
+
 if __name__ == "__main__":
     unittest.main()

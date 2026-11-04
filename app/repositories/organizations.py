@@ -137,3 +137,19 @@ def activate(organization_id, credential):
     finally:
         cursor.close()
         connection.close()
+
+
+def reject(organization_id, reason):
+    connection = get_connection()
+    cursor = connection.cursor()
+    try:
+        cursor.execute(
+            "UPDATE organizations SET status = 'rejected', rejection_reason = %s "
+            "WHERE id = %s AND status = 'pending'",
+            (reason, organization_id),
+        )
+        connection.commit()
+        return cursor.rowcount > 0
+    finally:
+        cursor.close()
+        connection.close()
