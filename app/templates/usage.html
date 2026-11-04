@@ -1,0 +1,20 @@
+{% extends "base.html" %}
+{% block title %}Consumo e cobrança{% endblock %}
+{% block content %}
+<h1>Consumo e cobrança</h1>
+<table class="table">
+    <tr><th>API</th><th>Plano</th><th>Requisições</th><th>Assinatura</th><th>Valor das requisições</th><th>Total</th></tr>
+    {% for item in items %}
+    <tr>
+        <td>{{ item.api_name }}</td>
+        <td>{{ item.plan_name }}</td>
+        <td>{{ item.request_count }}</td>
+        <td>US$ {{ '%.2f'|format(item.subscription_price_usd) }}</td>
+        <td>US$ {{ '%.2f'|format(item.request_total) }}</td>
+        <td>US$ {{ '%.2f'|format(item.subscription_price_usd + item.request_total) }}</td>
+    </tr>
+    {% else %}
+    <tr><td colspan="6">Nenhum consumo registrado.</td></tr>
+    {% endfor %}
+</table>
+{% endblock %}

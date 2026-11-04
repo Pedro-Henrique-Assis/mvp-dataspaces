@@ -1,0 +1,22 @@
+@startuml
+actor Consumidor
+participant "Interface Web" as UI
+participant "Flask" as App
+database "MySQL" as DB
+
+Consumidor -> UI: seleciona organização e inicia sessão
+UI -> App: POST /login
+App -> DB: busca DID e VC
+DB --> App: dados da organização
+App --> UI: sessão válida
+
+Consumidor -> UI: solicita dados premium
+UI -> App: GET /api/entregas/premium
+App -> DB: busca assinatura ativa
+DB --> App: plano e permissões
+App -> App: valida VC e autorização
+App -> DB: busca dados e registra requisição
+DB --> App: dados logísticos
+App --> UI: resposta JSON
+UI --> Consumidor: apresenta dados e cobrança
+@enduml

@@ -1,0 +1,21 @@
+{% extends "base.html" %}
+{% block title %}Assinaturas{% endblock %}
+{% block content %}
+<h1>Contratar uma API</h1>
+{% for api in apis %}
+<section class="card">
+    <h2>{{ api.name }}</h2>
+    <p>{{ api.description }} Fornecedor: {{ api.provider_name }}</p>
+    <form method="post" action="{{ url_for('subscriptions.create') }}">
+        <input type="hidden" name="api_id" value="{{ api.id }}">
+        <label for="plan-{{ api.id }}">Plano</label>
+        <select id="plan-{{ api.id }}" name="plan_id" required>
+            {% for plan in plans %}
+            <option value="{{ plan.id }}">{{ plan.name }} — US$ {{ '%.2f'|format(plan.subscription_price_usd) }}</option>
+            {% endfor %}
+        </select>
+        <button class="button" type="submit">Contratar</button>
+    </form>
+</section>
+{% endfor %}
+{% endblock %}

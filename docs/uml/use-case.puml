@@ -1,0 +1,32 @@
+@startuml
+left to right direction
+actor "Organização A" as A
+actor "Organização B" as B
+actor "Autoridade confiável" as Authority
+
+rectangle "Data Space MVP" {
+  usecase "Validar DID e VC" as Validate
+  usecase "Consultar catálogo de APIs" as Catalog
+  usecase "Contratar plano" as Subscribe
+  usecase "Consultar dados básicos" as Basic
+  usecase "Consultar dados premium" as Premium
+  usecase "Registrar requisição" as Register
+  usecase "Calcular cobrança" as Bill
+}
+
+A --> Catalog
+A --> Subscribe
+A --> Basic
+A --> Premium
+B --> Catalog
+B --> Subscribe
+B --> Basic
+B --> Premium
+Authority --> Validate
+Subscribe .> Validate : <<include>>
+Basic .> Validate : <<include>>
+Premium .> Validate : <<include>>
+Basic .> Register : <<include>>
+Premium .> Register : <<include>>
+Register .> Bill : <<include>>
+@enduml

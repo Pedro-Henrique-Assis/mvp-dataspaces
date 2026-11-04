@@ -1,0 +1,29 @@
+{% extends "base.html" %}
+{% block title %}Dashboard{% endblock %}
+{% block content %}
+<h1>Dashboard</h1>
+<section class="grid">
+    {% for api in apis %}
+    <article class="card">
+        <h2>{{ api.name }}</h2>
+        <p>{{ api.description }}</p>
+        <p>Fornecedor: {{ api.provider_name }}</p>
+        <a class="button" href="{{ url_for('subscriptions.index') }}">Ver planos</a>
+    </article>
+    {% endfor %}
+</section>
+
+<h2>Minhas assinaturas</h2>
+<table class="table">
+    <tr><th>API</th><th>Plano</th><th>Preço por requisição</th></tr>
+    {% for subscription in subscriptions %}
+    <tr>
+        <td>{{ subscription.api_name }}</td>
+        <td>{{ subscription.plan_name }}</td>
+        <td>US$ {{ '%.2f'|format(subscription.request_price_usd) }}</td>
+    </tr>
+    {% else %}
+    <tr><td colspan="3">Nenhuma assinatura ativa.</td></tr>
+    {% endfor %}
+</table>
+{% endblock %}
