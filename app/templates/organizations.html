@@ -1,0 +1,18 @@
+{% extends "base.html" %}
+{% block title %}Organizações{% endblock %}
+{% block content %}
+<h1>Organizações do Data Space</h1>
+<section class="grid">
+    {% for organization in organizations %}
+    <article class="card">
+        <h2>{{ organization.name }}</h2>
+        <p>{{ sectors[organization.sector] }} · {{ roles[organization.role] }}</p>
+        {% if organization.description %}<p>{{ organization.description }}</p>{% endif %}
+        <p>{{ organization.api_count }} {{ 'API' if organization.api_count == 1 else 'APIs' }}</p>
+        <a class="button" href="/organizations/{{ organization.id }}">Ver detalhes</a>
+    </article>
+    {% else %}
+    <p>Nenhuma organização ativa no momento.</p>
+    {% endfor %}
+</section>
+{% endblock %}

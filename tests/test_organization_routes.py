@@ -61,5 +61,43 @@ class RegistrationSubmitTest(unittest.TestCase):
         self.assertNotIn("segredo123", html)
 
 
+CATALOG_ITEM = {
+    "id": 1,
+    "name": "TransLog Brasil",
+    "sector": "logistics",
+    "role": "both",
+    "description": "Operadora logística.",
+    "api_count": 2,
+}
+
+
+class CatalogTest(unittest.TestCase):
+    def setUp(self):
+        self.client = create_app({"TESTING": True, "SECRET_KEY": "test"}).test_client()
+
+    def get(self, items):
+        with patch.object(organization_routes, "list_catalog", return_value=items):
+            return self.client.get("/organizations")
+
+    def test_catalog_is_public_and_lists_active_organizations(self):
+        response = self.get([CATALOG_ITEM])
+        html = response.get_data(as_text=True)
+        self.assertEqual(response.status_code, 200)
+        for text in ["TransLog Brasil", "Logística", "Operadora logística.", "/organizations/1"]:
+            self.assertIn(text, html)
+
+    def test_catalog_shows_role_and_api_count(self):
+        html = self.get([CATALOG_ITEM]).get_data(as_text=True)
+        self.assertIn("Consumidora e fornecedora", html)
+        self.assertIn("2 APIs", html)
+
+    def test_empty_catalog(self):
+        self.assertIn("Nenhuma organização", self.get([]).get_data(as_text=True))
+
+    def test_menu_has_catalog_link_for_visitor(self):
+        html = self.get([]).get_data(as_text=True)
+        self.assertIn('href="/organizations"', html)
+
+
 if __name__ == "__main__":
     unittest.main()

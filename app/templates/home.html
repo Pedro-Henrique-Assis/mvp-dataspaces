@@ -22,6 +22,7 @@
             <p class="eyebrow">Catálogo</p>
             <h2>APIs disponíveis</h2>
         </div>
+        <a class="text-link" href="{{ url_for('organizations.index') }}">Ver organizações</a>
         {% if session.get('organization_id') %}
         <a class="text-link" href="{{ url_for('subscriptions.index') }}">Gerenciar assinaturas</a>
         {% endif %}

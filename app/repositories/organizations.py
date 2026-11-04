@@ -1,13 +1,14 @@
 from app.database import get_connection
 
 
-def list_active():
+def list_catalog():
     connection = get_connection()
     cursor = connection.cursor(dictionary=True)
     try:
         cursor.execute(
-            "SELECT id, name, did FROM organizations "
-            "WHERE status = 'active' ORDER BY name"
+            "SELECT o.id, o.name, o.sector, o.role, o.description, COUNT(a.id) AS api_count "
+            "FROM organizations o LEFT JOIN apis a ON a.provider_org_id = o.id "
+            "WHERE o.status = 'active' GROUP BY o.id ORDER BY o.name"
         )
         return cursor.fetchall()
     finally:
