@@ -11,3 +11,4 @@ class Config:
         "password": os.getenv("MYSQL_PASSWORD", ""),
     }
     TRUSTED_ISSUER_DID = "did:example:dataspace-authority"
+    SESSION_COOKIE_SAMESITE = "Lax"
