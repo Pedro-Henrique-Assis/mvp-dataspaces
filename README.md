@@ -10,6 +10,40 @@ O sistema terá duas organizações, duas APIs, planos simples e premium, valida
 
 Em desenvolvimento.
 
+## Início rápido
+
+Requisitos: Python 3 e MySQL instalados, com o servidor MySQL em execução.
+
+**1. Criar o banco de dados** (na pasta do projeto):
+
+```powershell
+cmd /c "mysql -uroot -p --default-character-set=utf8mb4 < database\schema.sql"
+cmd /c "mysql -uroot -p --default-character-set=utf8mb4 dataspaces_mvp < database\seed.sql"
+```
+
+Se o `root` não tiver senha, remova o `-p`. Se o comando `mysql` não for reconhecido, use o caminho completo do executável, por exemplo `"C:\Program Files\MySQL\MySQL Server 8.4\bin\mysql.exe"`.
+
+**2. Instalar as dependências:**
+
+```powershell
+python -m venv .venv
+.\.venv\Scripts\Activate.ps1
+python -m pip install -r requirements.txt
+```
+
+**3. Executar:**
+
+```powershell
+# Apenas se o root do MySQL tiver senha:
+$env:MYSQL_PASSWORD = "sua-senha"
+
+python run.py
+```
+
+**4. Acessar:** abra http://127.0.0.1:5000 no navegador. Para encerrar, pressione `Ctrl+C`.
+
+Para repetir o teste do zero, apague o banco com `DROP DATABASE dataspaces_mvp;` e refaça o passo 1.
+
 ## Como executar localmente
 
 ### Pré-requisitos
