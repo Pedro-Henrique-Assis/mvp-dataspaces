@@ -20,7 +20,7 @@ def login():
         session.clear()
         if account_type == "admin":
             session["admin_id"] = account["id"]
-            return redirect("/admin/organizations")
+            return redirect(url_for("admin.organizations"))
         session["organization_id"] = account["id"]
         flash(f"Sessão iniciada para {account['name']}.", "success")
         return redirect(url_for("main.dashboard"))

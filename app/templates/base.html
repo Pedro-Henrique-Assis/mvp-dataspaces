@@ -10,13 +10,17 @@
     <header class="topbar">
         <a class="brand" href="{{ url_for('main.home') }}">Data Space MVP</a>
         <nav class="main-nav" aria-label="Navegação principal">
+            {% if session.get('admin_id') %}
+            <a href="{{ url_for('admin.organizations') }}">Aprovações ({{ pending_count }} pendentes)</a>
+            <a href="{{ url_for('auth.logout') }}">Sair</a>
+            {% elif session.get('organization_id') %}
             <a href="{{ url_for('main.home') }}">Início</a>
-            {% if session.get('organization_id') %}
             <a href="{{ url_for('main.dashboard') }}">Painel</a>
             <a href="{{ url_for('subscriptions.index') }}">Assinaturas</a>
             <a href="{{ url_for('usage.index') }}">Consumo</a>
             <a href="{{ url_for('auth.logout') }}">Sair</a>
             {% else %}
+            <a href="{{ url_for('main.home') }}">Início</a>
             <a class="nav-action" href="{{ url_for('auth.login') }}">Entrar</a>
             {% endif %}
         </nav>

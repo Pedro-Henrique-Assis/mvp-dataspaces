@@ -35,3 +35,14 @@ def get_by_email(email):
     finally:
         cursor.close()
         connection.close()
+
+
+def count_by_status(status):
+    connection = get_connection()
+    cursor = connection.cursor()
+    try:
+        cursor.execute("SELECT COUNT(*) FROM organizations WHERE status = %s", (status,))
+        return cursor.fetchone()[0]
+    finally:
+        cursor.close()
+        connection.close()
