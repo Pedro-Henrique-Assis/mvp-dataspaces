@@ -4,7 +4,7 @@
 
 MVP acadêmico para simular a monetização de dados de logística e transporte em um Data Space.
 
-O sistema terá duas organizações, duas APIs, planos simples e premium, validação acadêmica de DIDs e VCs e cobrança por assinatura e por requisição.
+O sistema permite que organizações se cadastrem com e-mail e senha, escolhendo ser consumidoras, fornecedoras ou ambos. Um administrador aprova ou rejeita o cadastro e, na aprovação, a organização recebe um DID e uma credencial verificável (VC) válida por um ano. Fornecedoras pré-cadastram uma API com o JSON de exemplo de cada plano e a política de uso. As APIs são servidas por uma única rota REST, com planos simples e premium e cobrança por assinatura e por requisição.
 
 ## Status
 
@@ -42,7 +42,21 @@ python run.py
 
 **4. Acessar:** abra http://127.0.0.1:5000 no navegador. Para encerrar, pressione `Ctrl+C`.
 
-Para repetir o teste do zero, apague o banco com `DROP DATABASE dataspaces_mvp;` e refaça o passo 1.
+Para repetir o teste do zero, apague o banco com `DROP DATABASE dataspaces_mvp;` e refaça o passo 1. O projeto não usa migrações: sempre que o `schema.sql` mudar, o banco precisa ser recriado assim.
+
+### Contas de demonstração
+
+| Conta | E-mail | Senha | Observação |
+|---|---|---|---|
+| Administrador | `admin@dataspace.local` | `admin123` | Aprova e rejeita cadastros |
+| TransLog Brasil | `contato@translog.com.br` | `translog123` | Consumidora e fornecedora, fornece a API de entregas |
+| CargaCerta Transportes | `contato@cargacerta.com.br` | `cargacerta123` | Consumidora e fornecedora, fornece a API de veículos |
+
+Novas organizações se cadastram em `/organizations/new` (botão **Registre-se** na tela de login) e ficam pendentes até o administrador aprovar em `/admin/organizations`.
+
+### Consumo das APIs
+
+Depois de assinar um plano, a API é consultada em `GET /api/v1/apis/<slug>/data?level=basic|premium`, com a sessão da organização consumidora. Exemplo: `/api/v1/apis/entregas/data?level=premium`.
 
 ## Como executar localmente
 
@@ -87,7 +101,7 @@ python run.py
 
 Se o comando `python` não estiver disponível, substitua-o pelo caminho do interpretador Python instalado, por exemplo `C:\python314\python.exe`.
 
-Com o servidor ativo, abra `http://127.0.0.1:5000` no navegador. Entre usando uma organização de exemplo, crie uma assinatura e então consulte as APIs. A página `/usage/` mostra o resumo de consumo e cobrança.
+Com o servidor ativo, abra `http://127.0.0.1:5000` no navegador. Entre com uma das contas de demonstração, crie uma assinatura e então consulte as APIs. A página `/usage` mostra o resumo de consumo e cobrança.
 
 Para encerrar o servidor, pressione `Ctrl+C` no terminal.
 
