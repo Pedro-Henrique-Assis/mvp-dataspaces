@@ -8,7 +8,10 @@
         <input id="email" name="email" type="email" required>
         <label for="password">Senha</label>
         <input id="password" name="password" type="password" required>
-        <button class="button" type="submit">Entrar</button>
+        <div class="card-actions">
+            <button class="button" type="submit">Entrar</button>
+            <a class="button button-secondary" href="{{ url_for('organizations.new') }}">Registre-se</a>
+        </div>
     </form>
 </section>
 {% endblock %}

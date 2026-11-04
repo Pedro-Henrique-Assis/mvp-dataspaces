@@ -1,0 +1,49 @@
+{% extends "base.html" %}
+{% block title %}Cadastro de organização{% endblock %}
+{% block content %}
+<section class="card">
+    <h1>Cadastro de organização</h1>
+    {% if errors %}
+    <div class="alert alert-error" role="alert">
+        <ul>
+            {% for error in errors %}
+            <li>{{ error }}</li>
+            {% endfor %}
+        </ul>
+    </div>
+    {% endif %}
+    <form method="post" action="/organizations">
+        <h2>Dados da organização</h2>
+        <label for="name">Razão social</label>
+        <input id="name" name="name" value="{{ form.get('name', '') }}" required>
+        <label for="cnpj">CNPJ</label>
+        <input id="cnpj" name="cnpj" value="{{ form.get('cnpj', '') }}" required>
+        <label for="email">E-mail</label>
+        <input id="email" name="email" type="email" value="{{ form.get('email', '') }}" required>
+        <label for="password">Senha</label>
+        <input id="password" name="password" type="password" required>
+        <label for="password_confirmation">Confirmação da senha</label>
+        <input id="password_confirmation" name="password_confirmation" type="password" required>
+        <label for="contact_name">Responsável</label>
+        <input id="contact_name" name="contact_name" value="{{ form.get('contact_name', '') }}" required>
+        <label for="sector">Setor</label>
+        <select id="sector" name="sector" required>
+            {% for value, label in [('transport', 'Transporte'), ('logistics', 'Logística'), ('retail', 'Varejo'), ('industry', 'Indústria'), ('other', 'Outro')] %}
+            <option value="{{ value }}" {{ 'selected' if form.get('sector') == value }}>{{ label }}</option>
+            {% endfor %}
+        </select>
+        <label for="description">Descrição (opcional)</label>
+        <input id="description" name="description" value="{{ form.get('description', '') }}">
+        <label for="website">Site (opcional)</label>
+        <input id="website" name="website" value="{{ form.get('website', '') }}">
+
+        <p>Papel no Data Space</p>
+        {% for value, label in [('consumer', 'Consumidora'), ('provider', 'Fornecedora'), ('both', 'Consumidora e fornecedora')] %}
+        <label><input type="radio" name="role" value="{{ value }}" {{ 'checked' if form.get('role') == value }} required> {{ label }}</label>
+        {% endfor %}
+
+        <label><input type="checkbox" name="accepted_terms" {{ 'checked' if form.get('accepted_terms') }}> Aceito os termos de uso do Data Space</label>
+        <button class="button" type="submit">Enviar cadastro</button>
+    </form>
+</section>
+{% endblock %}
