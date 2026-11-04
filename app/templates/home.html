@@ -40,9 +40,9 @@
                 {% else %}
                 <a class="button" href="{{ url_for('auth.login') }}">Entrar para assinar</a>
                 {% endif %}
-                {% if api.slug == 'entregas' %}
+                {% if session.get('organization_id') and api.slug == 'entregas' %}
                 <a class="text-link" href="{{ url_for('api_data.deliveries', level='basic') }}">Consultar entregas básicas</a>
-                {% elif api.slug == 'veiculos' %}
+                {% elif session.get('organization_id') and api.slug == 'veiculos' %}
                 <a class="text-link" href="{{ url_for('api_data.vehicles', level='basic') }}">Consultar veículos básicos</a>
                 {% endif %}
             </div>
