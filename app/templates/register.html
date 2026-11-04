@@ -1,0 +1,82 @@
+{% extends "base.html" %}
+{% block title %}Cadastro de organização{% endblock %}
+{% block content %}
+<section class="card">
+    <h1>Cadastro de organização</h1>
+    {% if errors %}
+    <div class="alert alert-error" role="alert">
+        <ul>
+            {% for error in errors %}
+            <li>{{ error }}</li>
+            {% endfor %}
+        </ul>
+    </div>
+    {% endif %}
+    <form method="post" action="/organizations">
+        <h2>Dados da organização</h2>
+        <label for="name">Razão social</label>
+        <input id="name" name="name" value="{{ form.get('name', '') }}" required>
+        <label for="cnpj">CNPJ</label>
+        <input id="cnpj" name="cnpj" value="{{ form.get('cnpj', '') }}" required>
+        <label for="email">E-mail</label>
+        <input id="email" name="email" type="email" value="{{ form.get('email', '') }}" required>
+        <label for="password">Senha</label>
+        <input id="password" name="password" type="password" required>
+        <label for="password_confirmation">Confirmação da senha</label>
+        <input id="password_confirmation" name="password_confirmation" type="password" required>
+        <label for="contact_name">Responsável</label>
+        <input id="contact_name" name="contact_name" value="{{ form.get('contact_name', '') }}" required>
+        <label for="sector">Setor</label>
+        <select id="sector" name="sector" required>
+            {% for value, label in [('transport', 'Transporte'), ('logistics', 'Logística'), ('retail', 'Varejo'), ('industry', 'Indústria'), ('other', 'Outro')] %}
+            <option value="{{ value }}" {{ 'selected' if form.get('sector') == value }}>{{ label }}</option>
+            {% endfor %}
+        </select>
+        <label for="description">Descrição (opcional)</label>
+        <input id="description" name="description" value="{{ form.get('description', '') }}">
+        <label for="website">Site (opcional)</label>
+        <input id="website" name="website" value="{{ form.get('website', '') }}">
+
+        <p>Papel no Data Space</p>
+        {% for value, label in [('consumer', 'Consumidora'), ('provider', 'Fornecedora'), ('both', 'Consumidora e fornecedora')] %}
+        <label><input type="radio" name="role" value="{{ value }}" {{ 'checked' if form.get('role') == value }} required> {{ label }}</label>
+        {% endfor %}
+
+        <fieldset id="api-fields">
+            <legend>API fornecida</legend>
+            <label for="api_name">Nome da API</label>
+            <input id="api_name" name="api_name" value="{{ form.get('api_name', '') }}">
+            <label for="api_description">Descrição da API</label>
+            <input id="api_description" name="api_description" value="{{ form.get('api_description', '') }}">
+            <label for="basic_response">Resposta do plano básico (JSON de exemplo)</label>
+            <textarea id="basic_response" name="basic_response" rows="6" placeholder='[{"codigo": "ENT-001", "status": "Em trânsito"}]'>{{ form.get('basic_response', '') }}</textarea>
+            <label for="premium_response">Resposta do plano premium (JSON de exemplo)</label>
+            <textarea id="premium_response" name="premium_response" rows="6" placeholder='[{"codigo": "ENT-001", "status": "Em trânsito", "previsao": "2030-11-03"}]'>{{ form.get('premium_response', '') }}</textarea>
+            <h3>Política de uso</h3>
+            <label for="policy_purpose">Finalidade</label>
+            <input id="policy_purpose" name="policy_purpose" value="{{ form.get('policy_purpose', '') }}">
+            <label><input type="checkbox" name="policy_allows_redistribution" {{ 'checked' if form.get('policy_allows_redistribution') }}> Permite redistribuição dos dados</label>
+            <label for="policy_retention_days">Prazo de retenção (dias)</label>
+            <input id="policy_retention_days" name="policy_retention_days" type="number" min="1" max="3650" value="{{ form.get('policy_retention_days', '') }}">
+            <label for="policy_notes">Observações (opcional)</label>
+            <textarea id="policy_notes" name="policy_notes" rows="3">{{ form.get('policy_notes', '') }}</textarea>
+        </fieldset>
+
+        <label><input type="checkbox" name="accepted_terms" {{ 'checked' if form.get('accepted_terms') }}> Aceito os termos de uso do Data Space</label>
+        <button class="button" type="submit">Enviar cadastro</button>
+    </form>
+</section>
+<script>
+    var apiFields = document.getElementById("api-fields");
+    function toggleApiFields() {
+        var role = document.querySelector('input[name="role"]:checked');
+        var show = role && role.value !== "consumer";
+        apiFields.hidden = !show;
+        apiFields.disabled = !show;
+    }
+    document.querySelectorAll('input[name="role"]').forEach(function (radio) {
+        radio.addEventListener("change", toggleApiFields);
+    });
+    toggleApiFields();
+</script>
+{% endblock %}

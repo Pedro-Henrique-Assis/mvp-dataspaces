@@ -2,19 +2,48 @@
 class Organization {
   id
   name
+  cnpj
+  email
+  password_hash
   did
+  sector
+  role
+  contact_name
+  description
+  website
+  status
+  rejection_reason
+  created_at
+}
+class Admin {
+  id
+  name
+  email
+  password_hash
 }
 class VerifiableCredential {
   issuer_did
   subject_did
+  role_provider
+  role_consumer
+  issued_at
   expires_at
   status
 }
 class ApiProduct {
   name
   slug
+  description
+  basic_response
+  premium_response
+  policy_purpose
+  policy_allows_redistribution
+  policy_retention_days
+  policy_notes
 }
 class Plan {
+  code
+  name
   subscription_price_usd
   request_price_usd
   max_access_level
@@ -25,14 +54,22 @@ class Subscription {
 }
 class ApiRequest {
   access_level
+  endpoint
   amount_usd
+  success
   requested_at
 }
 
-Organization "1" -- "1" VerifiableCredential
+Organization "1" -- "0..1" VerifiableCredential : recebe na aprovação
 Organization "1" -- "0..*" ApiProduct : fornece
 Organization "1" -- "0..*" Subscription : contrata
 ApiProduct "1" -- "0..*" Subscription
 Plan "1" -- "0..*" Subscription
 Subscription "1" -- "0..*" ApiRequest
+Admin ..> Organization : aprova ou rejeita
+
+note right of Organization
+  role: consumer, provider ou both
+  status: pending, active ou rejected
+end note
 @enduml

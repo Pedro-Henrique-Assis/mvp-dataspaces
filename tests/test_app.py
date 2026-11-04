@@ -13,6 +13,9 @@ class ApplicationTest(unittest.TestCase):
         self.assertEqual(response.status_code, 200)
         self.assertEqual(response.json["status"], "ok")
 
+    def test_session_cookie_uses_samesite_lax(self):
+        self.assertEqual(self.app.config["SESSION_COOKIE_SAMESITE"], "Lax")
+
 
 if __name__ == "__main__":
     unittest.main()

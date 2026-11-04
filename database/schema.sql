@@ -5,8 +5,25 @@ USE dataspaces_mvp;
 CREATE TABLE organizations (
     id INT AUTO_INCREMENT PRIMARY KEY,
     name VARCHAR(120) NOT NULL,
+    cnpj CHAR(14) NOT NULL UNIQUE,
+    email VARCHAR(160) NOT NULL UNIQUE,
+    password_hash VARCHAR(255) NOT NULL,
     did VARCHAR(180) NOT NULL UNIQUE,
-    active BOOLEAN NOT NULL DEFAULT TRUE
+    sector VARCHAR(40) NOT NULL,
+    role VARCHAR(10) NOT NULL,
+    contact_name VARCHAR(120) NOT NULL,
+    description VARCHAR(255),
+    website VARCHAR(160),
+    status VARCHAR(20) NOT NULL DEFAULT 'pending',
+    rejection_reason VARCHAR(255),
+    created_at DATETIME NOT NULL DEFAULT CURRENT_TIMESTAMP
+);
+
+CREATE TABLE admins (
+    id INT AUTO_INCREMENT PRIMARY KEY,
+    name VARCHAR(120) NOT NULL,
+    email VARCHAR(160) NOT NULL UNIQUE,
+    password_hash VARCHAR(255) NOT NULL
 );
 
 CREATE TABLE verifiable_credentials (
@@ -16,6 +33,7 @@ CREATE TABLE verifiable_credentials (
     subject_did VARCHAR(180) NOT NULL,
     role_provider BOOLEAN NOT NULL DEFAULT FALSE,
     role_consumer BOOLEAN NOT NULL DEFAULT FALSE,
+    issued_at DATE NOT NULL,
     expires_at DATE NOT NULL,
     status VARCHAR(20) NOT NULL DEFAULT 'active',
     FOREIGN KEY (organization_id) REFERENCES organizations(id)
@@ -27,6 +45,13 @@ CREATE TABLE apis (
     name VARCHAR(120) NOT NULL,
     slug VARCHAR(60) NOT NULL UNIQUE,
     description VARCHAR(255) NOT NULL,
+    basic_response TEXT NOT NULL,
+    premium_response TEXT NOT NULL,
+    policy_purpose VARCHAR(255) NOT NULL,
+    policy_allows_redistribution BOOLEAN NOT NULL DEFAULT FALSE,
+    policy_retention_days INT NOT NULL,
+    policy_notes VARCHAR(500),
+    created_at DATETIME NOT NULL DEFAULT CURRENT_TIMESTAMP,
     FOREIGN KEY (provider_org_id) REFERENCES organizations(id)
 );
 
@@ -50,30 +75,6 @@ CREATE TABLE subscriptions (
     FOREIGN KEY (consumer_org_id) REFERENCES organizations(id),
     FOREIGN KEY (api_id) REFERENCES apis(id),
     FOREIGN KEY (plan_id) REFERENCES plans(id)
-);
-
-CREATE TABLE deliveries (
-    id INT AUTO_INCREMENT PRIMARY KEY,
-    api_id INT NOT NULL,
-    tracking_code VARCHAR(40) NOT NULL,
-    origin VARCHAR(100) NOT NULL,
-    destination VARCHAR(100) NOT NULL,
-    status VARCHAR(40) NOT NULL,
-    estimated_delivery DATE NOT NULL,
-    route_distance_km DECIMAL(10, 2) NOT NULL,
-    FOREIGN KEY (api_id) REFERENCES apis(id)
-);
-
-CREATE TABLE vehicles (
-    id INT AUTO_INCREMENT PRIMARY KEY,
-    api_id INT NOT NULL,
-    vehicle_code VARCHAR(40) NOT NULL,
-    vehicle_type VARCHAR(60) NOT NULL,
-    available BOOLEAN NOT NULL,
-    capacity_kg DECIMAL(10, 2) NOT NULL,
-    current_location VARCHAR(100) NOT NULL,
-    next_available_date DATE NOT NULL,
-    FOREIGN KEY (api_id) REFERENCES apis(id)
 );
 
 CREATE TABLE api_requests (

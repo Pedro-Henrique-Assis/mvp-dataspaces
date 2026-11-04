@@ -2,9 +2,12 @@
 {% block title %}Assinaturas{% endblock %}
 {% block content %}
 <h1>Contratar uma API</h1>
+{% if not can_subscribe %}
+<div class="alert alert-error" role="alert">{{ message }}</div>
+{% else %}
 {% for api in apis %}
 <section class="card">
-    <h2>{{ api.name }}</h2>
+    <h2>{{ api.name }}{% if api.id == selected_id %} <small>(Selecionada)</small>{% endif %}</h2>
     <p>{{ api.description }} Fornecedor: {{ api.provider_name }}</p>
     <form method="post" action="{{ url_for('subscriptions.create') }}">
         <input type="hidden" name="api_id" value="{{ api.id }}">
@@ -17,5 +20,8 @@
         <button class="button" type="submit">Contratar</button>
     </form>
 </section>
+{% else %}
+<p>Nenhuma API disponível para assinatura.</p>
 {% endfor %}
+{% endif %}
 {% endblock %}

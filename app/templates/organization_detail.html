@@ -1,0 +1,49 @@
+{% extends "base.html" %}
+{% block title %}{{ organization.name }}{% endblock %}
+{% block content %}
+<h1>{{ organization.name }}</h1>
+<section class="card">
+    <p>{{ sectors[organization.sector] }} · {{ roles[organization.role] }}</p>
+    {% if organization.description %}<p>{{ organization.description }}</p>{% endif %}
+    <p>Responsável: {{ organization.contact_name }}</p>
+    {% if organization.website %}<p>Site: {{ organization.website }}</p>{% endif %}
+    <p>DID: {{ organization.did }}</p>
+    {% if credential %}
+    <p>Credencial verificável: emitida em {{ credential.issued_at }} e válida até {{ credential.expires_at }}</p>
+    {% endif %}
+</section>
+
+{% for api in apis %}
+<section class="card">
+    <h2>{{ api.name }}</h2>
+    <p>{{ api.description }}</p>
+
+    <h3>Planos</h3>
+    <table class="table">
+        <tr><th>Plano</th><th>Assinatura</th><th>Por requisição</th><th>Nível de acesso</th></tr>
+        {% for plan in plans %}
+        <tr>
+            <td>{{ plan.name }}</td>
+            <td>US$ {{ '%.2f'|format(plan.subscription_price_usd) }}</td>
+            <td>US$ {{ '%.2f'|format(plan.request_price_usd) }}</td>
+            <td>{{ plan.max_access_level }}</td>
+        </tr>
+        {% endfor %}
+    </table>
+
+    <h3>Campos dos dados</h3>
+    <p>Plano básico: {{ api.basic_fields|join(', ') }}</p>
+    <p>Acrescentados no premium: {{ api.extra_fields|join(', ') }}</p>
+
+    <h3>Política de uso</h3>
+    <p>Finalidade: {{ api.policy_purpose }}</p>
+    <p>Redistribuição: {{ 'permitida' if api.policy_allows_redistribution else 'não permitida' }}</p>
+    <p>Retenção: {{ api.policy_retention_days }} dias</p>
+    {% if api.policy_notes %}<p>Observações: {{ api.policy_notes }}</p>{% endif %}
+
+    {% if session.get('organization_id') and session.get('organization_id') != organization.id %}
+    <a class="button" href="{{ url_for('subscriptions.index', api_id=api.id) }}">Assinar</a>
+    {% endif %}
+</section>
+{% endfor %}
+{% endblock %}

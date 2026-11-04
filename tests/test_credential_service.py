@@ -35,6 +35,34 @@ class CredentialServiceTest(unittest.TestCase):
         )
         self.assertFalse(valid)
 
+    def validate(self, required_role, **roles):
+        credential = {**self.credential, **roles}
+        return validate_credential(
+            credential,
+            self.organization,
+            "did:example:authority",
+            required_role=required_role,
+            today=date(2030, 1, 1),
+        )
+
+    def test_accepts_single_role_without_requirement(self):
+        valid, _ = self.validate(None, role_provider=False)
+        self.assertTrue(valid)
+
+    def test_consumer_role_is_required(self):
+        valid, message = self.validate("consumer", role_consumer=False)
+        self.assertFalse(valid)
+        self.assertEqual(message, "A organização não está habilitada como consumidora.")
+
+    def test_provider_role_is_required(self):
+        valid, message = self.validate("provider", role_provider=False)
+        self.assertFalse(valid)
+        self.assertEqual(message, "A organização não está habilitada como fornecedora.")
+
+    def test_required_role_present(self):
+        valid, _ = self.validate("consumer", role_provider=False)
+        self.assertTrue(valid)
+
 
 if __name__ == "__main__":
     unittest.main()
