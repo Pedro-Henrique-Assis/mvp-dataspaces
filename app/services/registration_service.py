@@ -1,3 +1,5 @@
+import json
+
 from werkzeug.security import generate_password_hash
 
 from app.repositories.admins import get_by_email as get_admin_by_email
@@ -29,6 +31,7 @@ def is_valid_cnpj(cnpj):
 
 SECTORS = ["transport", "logistics", "retail", "industry", "other"]
 ROLES = ["consumer", "provider", "both"]
+MAX_RESPONSE_BYTES = 20 * 1024
 
 
 def valid_email(email):
@@ -78,6 +81,45 @@ def validate_organization(form):
         if len(form.get(field, "").strip()) > size:
             errors.append(f"{label} deve ter até {size} caracteres.")
     return errors
+
+
+def response_fields(data):
+    if isinstance(data, dict):
+        return set(data)
+    fields = set()
+    for item in data:
+        fields |= set(item)
+    return fields
+
+
+def parse_response(text, plan):
+    if len(text.encode("utf-8")) > MAX_RESPONSE_BYTES:
+        return None, f"A resposta do plano {plan} deve ter até 20 KB."
+    try:
+        data = json.loads(text)
+    except ValueError:
+        return None, f"A resposta do plano {plan} não é um JSON válido."
+    is_object = isinstance(data, dict) and data
+    is_list = isinstance(data, list) and data and all(isinstance(item, dict) and item for item in data)
+    if not is_object and not is_list:
+        return None, f"A resposta do plano {plan} deve ser um objeto ou uma lista não vazia de objetos."
+    return data, None
+
+
+def validate_responses(basic_text, premium_text):
+    basic, basic_error = parse_response(basic_text or "", "básico")
+    premium, premium_error = parse_response(premium_text or "", "premium")
+    errors = [error for error in (basic_error, premium_error) if error]
+    if errors:
+        return errors
+
+    basic_fields = response_fields(basic)
+    premium_fields = response_fields(premium)
+    if not basic_fields <= premium_fields:
+        return ["O plano premium deve conter todos os campos do plano básico."]
+    if premium_fields == basic_fields:
+        return ["O plano premium deve ter pelo menos um campo a mais que o básico."]
+    return []
 
 
 def register_organization(form):
