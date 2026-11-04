@@ -18,10 +18,15 @@ def index():
 @subscriptions_blueprint.post("/create")
 @login_required
 def create():
+    api_id = request.form.get("api_id", type=int)
+    plan_id = request.form.get("plan_id", type=int)
+    if not api_id or not plan_id:
+        flash("Selecione uma API e um plano.", "error")
+        return redirect(url_for("subscriptions.index"))
     success, result = create_subscription(
         current_organization_id(),
-        int(request.form["api_id"]),
-        int(request.form["plan_id"]),
+        api_id,
+        plan_id,
         current_app.config["TRUSTED_ISSUER_DID"],
     )
     flash("Assinatura criada." if success else result, "success" if success else "error")

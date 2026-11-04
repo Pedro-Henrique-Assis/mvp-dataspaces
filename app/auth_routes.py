@@ -12,7 +12,11 @@ auth_blueprint = Blueprint("auth", __name__)
 def login():
     organizations = list_active()
     if request.method == "POST":
-        organization = get_by_id(int(request.form["organization_id"]))
+        organization_id = request.form.get("organization_id", type=int)
+        organization = get_by_id(organization_id) if organization_id else None
+        if not organization or not organization["active"]:
+            flash("Organização não encontrada.", "error")
+            return render_template("login.html", organizations=organizations)
         credential = get_for_organization(organization["id"])
         valid, message = validate_credential(
             credential, organization, current_app.config["TRUSTED_ISSUER_DID"]
