@@ -129,14 +129,15 @@ class MakeSlugTest(unittest.TestCase):
         self.assertFalse(make_slug("a" * 59 + " b").endswith("-"))
 
 
-class RegisterOrganizationTest(unittest.TestCase):
-    def register(self, form, email_org=None, email_admin=None, cnpj_org=None):
-        with patch.object(service, "get_organization_by_email", return_value=email_org),                 patch.object(service, "get_admin_by_email", return_value=email_admin),                 patch.object(service, "get_organization_by_cnpj", return_value=cnpj_org),                 patch.object(service, "create_with_api") as create:
-            return service.register_organization(form), create
+def register(form, email_org=None, email_admin=None, cnpj_org=None, slug_api=None):
+    with patch.object(service, "get_organization_by_email", return_value=email_org),             patch.object(service, "get_admin_by_email", return_value=email_admin),             patch.object(service, "get_organization_by_cnpj", return_value=cnpj_org),             patch.object(service, "get_api_by_slug", return_value=slug_api),             patch.object(service, "create_with_api") as create:
+        return service.register_organization(form), create
 
+
+class RegisterOrganizationTest(unittest.TestCase):
     def test_saves_pending_organization_with_clean_data(self):
         form = valid_form(email=" Contato@RotaCerta.com.br ")
-        (ok, errors), create = self.register(form)
+        (ok, errors), create = register(form)
         self.assertTrue(ok)
         self.assertEqual(errors, [])
         org, api = create.call_args.args
@@ -148,25 +149,82 @@ class RegisterOrganizationTest(unittest.TestCase):
         self.assertIsNone(api)
 
     def test_invalid_form_saves_nothing(self):
-        (ok, errors), create = self.register(valid_form(cnpj="123"))
+        (ok, errors), create = register(valid_form(cnpj="123"))
         self.assertFalse(ok)
         self.assertIn("CNPJ inválido.", errors)
         create.assert_not_called()
 
     def test_duplicate_email_in_organizations(self):
-        (ok, errors), create = self.register(valid_form(), email_org={"id": 1})
+        (ok, errors), create = register(valid_form(), email_org={"id": 1})
         self.assertFalse(ok)
         self.assertEqual(errors, ["E-mail já cadastrado."])
         create.assert_not_called()
 
     def test_duplicate_email_in_admins(self):
-        (_, errors), _ = self.register(valid_form(), email_admin={"id": 1})
+        (_, errors), _ = register(valid_form(), email_admin={"id": 1})
         self.assertEqual(errors, ["E-mail já cadastrado."])
 
     def test_duplicate_cnpj(self):
-        (_, errors), create = self.register(valid_form(), cnpj_org={"id": 1})
+        (_, errors), create = register(valid_form(), cnpj_org={"id": 1})
         self.assertEqual(errors, ["CNPJ já cadastrado."])
         create.assert_not_called()
+
+
+def provider_form(**changes):
+    form = valid_form(role="provider")
+    form.update(api_form())
+    form.update(policy_form())
+    form.update(
+        basic_response='[{"id": 1}]',
+        premium_response='[{"id": 1, "extra": 2}]',
+        policy_allows_redistribution="on",
+    )
+    form.update(changes)
+    return form
+
+
+class RegisterProviderTest(unittest.TestCase):
+    def test_provider_saves_organization_with_api(self):
+        (ok, _), create = register(provider_form())
+        self.assertTrue(ok)
+        org, api = create.call_args.args
+        self.assertEqual(org["role"], "provider")
+        self.assertEqual(api["name"], "API de Rotas")
+        self.assertEqual(api["slug"], "api-de-rotas")
+        self.assertEqual(api["basic_response"], '[{"id": 1}]')
+        self.assertIs(api["policy_allows_redistribution"], True)
+        self.assertEqual(api["policy_retention_days"], 90)
+        self.assertIsNone(api["policy_notes"])
+
+    def test_redistribution_defaults_to_false(self):
+        (_, _), create = register(provider_form(policy_allows_redistribution=""))
+        self.assertIs(create.call_args.args[1]["policy_allows_redistribution"], False)
+
+    def test_both_role_also_needs_api(self):
+        (ok, errors), create = register(provider_form(role="both", api_name=""))
+        self.assertFalse(ok)
+        self.assertIn("Nome da API é obrigatório.", errors)
+        create.assert_not_called()
+
+    def test_all_api_errors_are_listed_together(self):
+        (_, errors), _ = register(provider_form(policy_purpose="", basic_response="x"))
+        self.assertIn("Finalidade de uso é obrigatória.", errors)
+        self.assertIn("A resposta do plano básico não é um JSON válido.", errors)
+
+    def test_consumer_ignores_api_fields(self):
+        (ok, _), create = register(provider_form(role="consumer", api_name="", basic_response="x"))
+        self.assertTrue(ok)
+        self.assertIsNone(create.call_args.args[1])
+
+    def test_duplicate_slug(self):
+        (_, errors), create = register(provider_form(), slug_api={"id": 9})
+        self.assertEqual(errors, ["Já existe uma API com esse nome."])
+        create.assert_not_called()
+
+    def test_name_without_letters_cannot_become_slug(self):
+        (ok, errors), _ = register(provider_form(api_name="!!!"))
+        self.assertFalse(ok)
+        self.assertIn("Nome da API deve ter letras ou números.", errors)
 
 
 if __name__ == "__main__":

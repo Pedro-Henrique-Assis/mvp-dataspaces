@@ -5,6 +5,7 @@ import unicodedata
 from werkzeug.security import generate_password_hash
 
 from app.repositories.admins import get_by_email as get_admin_by_email
+from app.repositories.apis import get_by_slug as get_api_by_slug
 from app.repositories.organizations import (
     create_with_api,
     get_by_cnpj as get_organization_by_cnpj,
@@ -93,6 +94,8 @@ def validate_api(form):
         errors.append("Nome da API é obrigatório.")
     elif len(name) > 120:
         errors.append("Nome da API deve ter até 120 caracteres.")
+    elif not make_slug(name):
+        errors.append("Nome da API deve ter letras ou números.")
     if not description:
         errors.append("Descrição da API é obrigatória.")
     elif len(description) > 255:
@@ -162,8 +165,30 @@ def validate_responses(basic_text, premium_text):
     return []
 
 
+def has_api(form):
+    return form.get("role") in ("provider", "both")
+
+
+def build_api(form, slug):
+    return {
+        "name": form["api_name"].strip(),
+        "slug": slug,
+        "description": form["api_description"].strip(),
+        "basic_response": form["basic_response"],
+        "premium_response": form["premium_response"],
+        "policy_purpose": form["policy_purpose"].strip(),
+        "policy_allows_redistribution": bool(form.get("policy_allows_redistribution")),
+        "policy_retention_days": int(form["policy_retention_days"]),
+        "policy_notes": form.get("policy_notes", "").strip() or None,
+    }
+
+
 def register_organization(form):
     errors = validate_organization(form)
+    if has_api(form):
+        errors += validate_api(form)
+        errors += validate_responses(form.get("basic_response"), form.get("premium_response"))
+        errors += validate_policy(form)
     if errors:
         return False, errors
 
@@ -173,6 +198,9 @@ def register_organization(form):
         errors.append("E-mail já cadastrado.")
     if get_organization_by_cnpj(cnpj):
         errors.append("CNPJ já cadastrado.")
+    slug = make_slug(form["api_name"]) if has_api(form) else None
+    if slug and get_api_by_slug(slug):
+        errors.append("Já existe uma API com esse nome.")
     if errors:
         return False, errors
 
@@ -188,5 +216,6 @@ def register_organization(form):
         "description": form.get("description", "").strip() or None,
         "website": form.get("website", "").strip() or None,
     }
-    create_with_api(organization, None)
+    api = build_api(form, slug) if slug else None
+    create_with_api(organization, api)
     return True, []
