@@ -4,7 +4,12 @@ from unittest.mock import patch
 from werkzeug.security import check_password_hash
 
 from app.services import registration_service as service
-from app.services.registration_service import validate_organization
+from app.services.registration_service import (
+    make_slug,
+    validate_api,
+    validate_organization,
+    validate_policy,
+)
 
 
 def valid_form(**changes):
@@ -64,6 +69,64 @@ class ValidateOrganizationTest(unittest.TestCase):
         self.assertIn("Razão social deve ter até 120 caracteres.", errors)
         self.assertIn("Site deve ter até 160 caracteres.", errors)
         self.assertIn("Descrição deve ter até 255 caracteres.", errors)
+
+
+def api_form(**changes):
+    form = {"api_name": "API de Rotas", "api_description": "Rotas e prazos de entrega."}
+    form.update(changes)
+    return form
+
+
+def policy_form(**changes):
+    form = {"policy_purpose": "Planejamento logístico", "policy_retention_days": "90", "policy_notes": ""}
+    form.update(changes)
+    return form
+
+
+class ValidateApiTest(unittest.TestCase):
+    def test_valid_api(self):
+        self.assertEqual(validate_api(api_form()), [])
+
+    def test_required_fields(self):
+        self.assertIn("Nome da API é obrigatório.", validate_api(api_form(api_name=" ")))
+        self.assertIn("Descrição da API é obrigatória.", validate_api(api_form(api_description="")))
+
+    def test_size_limits(self):
+        errors = validate_api(api_form(api_name="x" * 121, api_description="y" * 256))
+        self.assertIn("Nome da API deve ter até 120 caracteres.", errors)
+        self.assertIn("Descrição da API deve ter até 255 caracteres.", errors)
+
+
+class ValidatePolicyTest(unittest.TestCase):
+    def test_valid_policy(self):
+        self.assertEqual(validate_policy(policy_form()), [])
+
+    def test_purpose_is_required(self):
+        self.assertIn("Finalidade de uso é obrigatória.", validate_policy(policy_form(policy_purpose="")))
+
+    def test_retention_must_be_integer_between_1_and_3650(self):
+        for value in ["", "abc", "1.5", "0", "-3", "3651"]:
+            errors = validate_policy(policy_form(policy_retention_days=value))
+            self.assertIn("O prazo de retenção deve ser um número inteiro entre 1 e 3650 dias.", errors, value)
+        self.assertEqual(validate_policy(policy_form(policy_retention_days="3650")), [])
+
+    def test_size_limits(self):
+        errors = validate_policy(policy_form(policy_purpose="x" * 256, policy_notes="y" * 501))
+        self.assertIn("Finalidade de uso deve ter até 255 caracteres.", errors)
+        self.assertIn("Observações devem ter até 500 caracteres.", errors)
+
+
+class MakeSlugTest(unittest.TestCase):
+    def test_lowercase_without_accents(self):
+        self.assertEqual(make_slug("API de Veículos"), "api-de-veiculos")
+
+    def test_symbols_become_single_dash_without_edges(self):
+        self.assertEqual(make_slug("  --Rotas & Prazos!! "), "rotas-prazos")
+
+    def test_limited_to_60_characters(self):
+        slug = make_slug("a" * 100)
+        self.assertEqual(len(slug), 60)
+        self.assertFalse(make_slug("a" * 59 + " b").endswith("-"))
 
 
 class RegisterOrganizationTest(unittest.TestCase):

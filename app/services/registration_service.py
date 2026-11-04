@@ -1,4 +1,6 @@
 import json
+import re
+import unicodedata
 
 from werkzeug.security import generate_password_hash
 
@@ -81,6 +83,44 @@ def validate_organization(form):
         if len(form.get(field, "").strip()) > size:
             errors.append(f"{label} deve ter até {size} caracteres.")
     return errors
+
+
+def validate_api(form):
+    errors = []
+    name = form.get("api_name", "").strip()
+    description = form.get("api_description", "").strip()
+    if not name:
+        errors.append("Nome da API é obrigatório.")
+    elif len(name) > 120:
+        errors.append("Nome da API deve ter até 120 caracteres.")
+    if not description:
+        errors.append("Descrição da API é obrigatória.")
+    elif len(description) > 255:
+        errors.append("Descrição da API deve ter até 255 caracteres.")
+    return errors
+
+
+def validate_policy(form):
+    errors = []
+    purpose = form.get("policy_purpose", "").strip()
+    if not purpose:
+        errors.append("Finalidade de uso é obrigatória.")
+    elif len(purpose) > 255:
+        errors.append("Finalidade de uso deve ter até 255 caracteres.")
+
+    days = form.get("policy_retention_days", "").strip()
+    if not (days.isascii() and days.isdigit()) or not 1 <= int(days) <= 3650:
+        errors.append("O prazo de retenção deve ser um número inteiro entre 1 e 3650 dias.")
+
+    if len(form.get("policy_notes", "").strip()) > 500:
+        errors.append("Observações devem ter até 500 caracteres.")
+    return errors
+
+
+def make_slug(name):
+    text = unicodedata.normalize("NFKD", name).encode("ascii", "ignore").decode()
+    text = re.sub(r"[^a-z0-9]+", "-", text.lower())
+    return text[:60].strip("-")
 
 
 def response_fields(data):
