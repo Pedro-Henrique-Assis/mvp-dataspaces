@@ -42,7 +42,7 @@
     {% if api.policy_notes %}<p>Observações: {{ api.policy_notes }}</p>{% endif %}
 
     {% if session.get('organization_id') and session.get('organization_id') != organization.id %}
-    <a class="button" href="/subscriptions?api_id={{ api.id }}">Assinar</a>
+    <a class="button" href="{{ url_for('subscriptions.index', api_id=api.id) }}">Assinar</a>
     {% endif %}
 </section>
 {% endfor %}
