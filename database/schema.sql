@@ -76,30 +76,6 @@ CREATE TABLE subscriptions (
     FOREIGN KEY (plan_id) REFERENCES plans(id)
 );
 
-CREATE TABLE deliveries (
-    id INT AUTO_INCREMENT PRIMARY KEY,
-    api_id INT NOT NULL,
-    tracking_code VARCHAR(40) NOT NULL,
-    origin VARCHAR(100) NOT NULL,
-    destination VARCHAR(100) NOT NULL,
-    status VARCHAR(40) NOT NULL,
-    estimated_delivery DATE NOT NULL,
-    route_distance_km DECIMAL(10, 2) NOT NULL,
-    FOREIGN KEY (api_id) REFERENCES apis(id)
-);
-
-CREATE TABLE vehicles (
-    id INT AUTO_INCREMENT PRIMARY KEY,
-    api_id INT NOT NULL,
-    vehicle_code VARCHAR(40) NOT NULL,
-    vehicle_type VARCHAR(60) NOT NULL,
-    available BOOLEAN NOT NULL,
-    capacity_kg DECIMAL(10, 2) NOT NULL,
-    current_location VARCHAR(100) NOT NULL,
-    next_available_date DATE NOT NULL,
-    FOREIGN KEY (api_id) REFERENCES apis(id)
-);
-
 CREATE TABLE api_requests (
     id INT AUTO_INCREMENT PRIMARY KEY,
     subscription_id INT NOT NULL,
