@@ -4,19 +4,25 @@ participant "Interface Web" as UI
 participant "Flask" as App
 database "MySQL" as DB
 
-Consumidor -> UI: seleciona organização e inicia sessão
+Consumidor -> UI: informa e-mail e senha
 UI -> App: POST /login
-App -> DB: busca DID e VC
-DB --> App: dados da organização
+App -> DB: busca administrador ou organização pelo e-mail
+DB --> App: dados da conta
+App -> App: confere a senha e o status do cadastro
+App -> DB: busca a VC da organização
+DB --> App: VC
+App -> App: valida emissor, titular e validade
 App --> UI: sessão válida
 
 Consumidor -> UI: solicita dados premium
-UI -> App: GET /api/entregas/premium
+UI -> App: GET /api/v1/apis/entregas/data?level=premium
+App -> DB: busca a API e o status da fornecedora
+DB --> App: API
+App -> App: valida a VC com papel de consumidora
 App -> DB: busca assinatura ativa
 DB --> App: plano e permissões
-App -> App: valida VC e autorização
-App -> DB: busca dados e registra requisição
-DB --> App: dados logísticos
-App --> UI: resposta JSON
+App -> App: autoriza o nível de acesso
+App -> DB: registra a requisição e a cobrança
+App --> UI: JSON do plano (campo premium_response)
 UI --> Consumidor: apresenta dados e cobrança
 @enduml
