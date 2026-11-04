@@ -1,4 +1,5 @@
-CREATE DATABASE IF NOT EXISTS dataspaces_mvp;
+CREATE DATABASE IF NOT EXISTS dataspaces_mvp
+    CHARACTER SET utf8mb4 COLLATE utf8mb4_unicode_ci;
 USE dataspaces_mvp;
 
 CREATE TABLE organizations (
