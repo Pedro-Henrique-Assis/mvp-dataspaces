@@ -4,7 +4,15 @@ from decimal import Decimal
 from unittest.mock import patch
 
 from app.services import credit_service
-from app.services.credit_service import confirm_top_up, fake_pix_code, open_top_up, package_price_usd, validate_package
+from app.services.credit_service import (
+    confirm_top_up,
+    count_pages,
+    fake_pix_code,
+    open_top_up,
+    package_price_usd,
+    parse_page,
+    validate_package,
+)
 
 
 class PackagePriceTest(unittest.TestCase):
@@ -103,6 +111,21 @@ class ConfirmTopUpTest(unittest.TestCase):
         self.assertEqual(confirm_top_up(2, "ABC"), ("not_found", ""))
         self.get_by_code.assert_called_once_with(2, "ABC")
         self.confirm.assert_not_called()
+
+
+class StatementPageTest(unittest.TestCase):
+    def test_parse_page_accepts_missing_and_positive_integers(self):
+        for value, expected in [(None, 1), ("", 1), ("1", 1), ("7", 7)]:
+            self.assertEqual(parse_page(value), (True, expected), value)
+
+    def test_parse_page_rejects_everything_else(self):
+        for value in ["abc", "0", "-1", "1.5", " 2", "1e3", "²"]:
+            self.assertEqual(parse_page(value), (False, None), value)
+
+    def test_count_pages(self):
+        self.assertEqual(count_pages(0, 20), 1)
+        self.assertEqual(count_pages(20, 20), 1)
+        self.assertEqual(count_pages(21, 20), 2)
 
 
 if __name__ == "__main__":

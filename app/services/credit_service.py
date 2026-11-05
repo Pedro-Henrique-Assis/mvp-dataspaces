@@ -1,3 +1,4 @@
+import math
 import secrets
 
 from app.repositories.pix_charges import confirm, create, expire_overdue, find_open, get_by_code
@@ -5,6 +6,18 @@ from app.repositories.pix_charges import confirm, create, expire_overdue, find_o
 
 def package_price_usd(package, credit_value):
     return package * credit_value
+
+
+def parse_page(value):
+    if value is None or value == "":
+        return True, 1
+    if not value.isdecimal() or int(value) < 1:
+        return False, None
+    return True, int(value)
+
+
+def count_pages(total_items, per_page):
+    return max(1, math.ceil(total_items / per_page))
 
 
 def validate_package(value, packages):
