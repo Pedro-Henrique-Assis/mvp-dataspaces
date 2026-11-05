@@ -42,14 +42,13 @@ class ApiRoutesTest(unittest.TestCase):
         with self.client.session_transaction() as session:
             session["organization_id"] = 1
 
-    def request(self, path=URL, api=API, credential=CREDENTIAL, subscription=SIMPLE, paid=True):
+    def request(self, path=URL, api=API, credential=CREDENTIAL, subscription=SIMPLE, paid=(True, 15)):
         self.login()
         patchers = (
             patch.object(api_routes, "get_by_slug", return_value=api),
             patch.object(api_routes, "get_for_organization", return_value=credential),
             patch.object(api_routes, "get_organization", return_value=ORGANIZATION),
             patch.object(api_routes, "find_active", return_value=subscription),
-            patch.object(api_routes, "get_balance", return_value=15),
             patch.object(api_routes, "register_paid_request", return_value=paid),
         )
         mocks = [p.start() for p in patchers]
@@ -91,12 +90,17 @@ class ApiRoutesTest(unittest.TestCase):
         )
 
     def test_without_credits_returns_402_and_no_data(self):
-        response, _ = self.request(paid=False)
+        response, _ = self.request(paid=(False, 3))
         self.assertEqual(response.status_code, 402)
         self.assertEqual(response.json, {"error": "Créditos insuficientes. Custo: 5, saldo: 3."})
 
+    def test_balance_comes_from_the_charge_itself(self):
+        response, _ = self.request(paid=(True, 42))
+        self.assertEqual(response.json["balance"], 42)
+        self.assertFalse(hasattr(api_routes, "get_balance"))
+
     def test_credits_are_checked_after_authorization(self):
-        response, register = self.request(subscription=None, paid=False)
+        response, register = self.request(subscription=None, paid=(False, 3))
         self.assertEqual(response.status_code, 403)
         register.assert_not_called()
 

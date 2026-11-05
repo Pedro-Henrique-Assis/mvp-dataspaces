@@ -26,6 +26,7 @@ def log(cursor, organization_id, amount, type, description):
         "VALUES (%s, %s, %s, %s, %s)",
         (organization_id, amount, type, description, balance),
     )
+    return balance
 
 
 def add(organization_id, amount, type, description):
