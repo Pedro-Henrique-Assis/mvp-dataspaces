@@ -37,4 +37,11 @@
     <tr><td colspan="5">Nenhuma movimentação.</td></tr>
     {% endfor %}
 </table>
+{% if total_pages > 1 %}
+<p>Página {{ page }} de {{ total_pages }}</p>
+<p>
+    {% if page > 1 %}<a href="{{ url_for('credits.index', page=page - 1) }}">Anterior</a>{% endif %}
+    {% if page < total_pages %}<a href="{{ url_for('credits.index', page=page + 1) }}">Próxima</a>{% endif %}
+</p>
+{% endif %}
 {% endblock %}

@@ -83,9 +83,13 @@ class CreditsPageTest(unittest.TestCase):
             session["organization_id"] = 2
 
     def page(self, transactions=TRANSACTIONS):
-        with patch.object(credit_routes, "get_balance", return_value=120),                 patch.object(credit_routes, "expire_overdue"),                 patch.object(credit_routes, "list_for_organization", return_value=transactions) as listing,                 patch.object(credit_routes, "totals_for_organization", return_value={"spent": 105, "received": 5}) as totals:
+        with patch.object(credit_routes, "get_balance", return_value=120), \
+                patch.object(credit_routes, "expire_overdue"), \
+                patch.object(credit_routes, "count_for_organization", return_value=len(transactions)), \
+                patch.object(credit_routes, "list_for_organization", return_value=transactions) as listing, \
+                patch.object(credit_routes, "totals_for_organization", return_value={"spent": 105, "received": 5}) as totals:
             html = self.client.get("/credits").get_data(as_text=True)
-        listing.assert_called_once_with(2)
+        listing.assert_called_once_with(2, 20, 0)
         totals.assert_called_once_with(2)
         return html
 
@@ -118,6 +122,63 @@ class CreditsPageTest(unittest.TestCase):
 
     def test_empty_statement(self):
         self.assertIn("Nenhuma movimentação", self.page([]))
+
+
+class CreditsPaginationTest(unittest.TestCase):
+    def setUp(self):
+        self.client = create_app({"TESTING": True, "SECRET_KEY": "test"}).test_client()
+        with self.client.session_transaction() as session:
+            session["organization_id"] = 2
+
+    def get(self, url, total):
+        with patch.object(credit_routes, "get_balance", return_value=120), \
+                patch.object(credit_routes, "expire_overdue"), \
+                patch.object(credit_routes, "count_for_organization", return_value=total), \
+                patch.object(credit_routes, "list_for_organization", return_value=[]) as listing, \
+                patch.object(credit_routes, "totals_for_organization", return_value={"spent": 0, "received": 0}):
+            response = self.client.get(url)
+        return response, listing
+
+    def test_first_page_by_default(self):
+        response, listing = self.get("/credits", 45)
+        html = response.get_data(as_text=True)
+        listing.assert_called_once_with(2, 20, 0)
+        self.assertIn("Página 1 de 3", html)
+        self.assertIn('href="/credits?page=2"', html)
+        self.assertNotIn("Anterior", html)
+
+    def test_middle_page_has_both_links(self):
+        response, listing = self.get("/credits?page=2", 45)
+        html = response.get_data(as_text=True)
+        listing.assert_called_once_with(2, 20, 20)
+        self.assertIn('href="/credits?page=1"', html)
+        self.assertIn('href="/credits?page=3"', html)
+
+    def test_last_page_has_no_next(self):
+        response, listing = self.get("/credits?page=3", 45)
+        listing.assert_called_once_with(2, 20, 40)
+        self.assertNotIn("Próxima", response.get_data(as_text=True))
+
+    def test_single_page_hides_navigation(self):
+        html = self.get("/credits", 5)[0].get_data(as_text=True)
+        self.assertNotIn("Página 1 de 1", html)
+
+    def test_malformed_page_is_400(self):
+        for url in ["/credits?page=abc", "/credits?page=0"]:
+            response, listing = self.get(url, 45)
+            self.assertEqual(response.status_code, 400)
+            self.assertIn("A página pesquisada não existe.", response.get_data(as_text=True))
+            listing.assert_not_called()
+
+    def test_page_beyond_last_is_404(self):
+        response, listing = self.get("/credits?page=4", 45)
+        self.assertEqual(response.status_code, 404)
+        self.assertIn("A página pesquisada não existe.", response.get_data(as_text=True))
+        listing.assert_not_called()
+
+    def test_empty_statement_page_one_is_ok(self):
+        response, _ = self.get("/credits?page=1", 0)
+        self.assertEqual(response.status_code, 200)
 
 
 class TopUpTest(unittest.TestCase):

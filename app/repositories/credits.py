@@ -54,14 +54,25 @@ def get_balance(organization_id):
         connection.close()
 
 
-def list_for_organization(organization_id, limit=50):
+def count_for_organization(organization_id):
+    connection = get_connection()
+    cursor = connection.cursor()
+    try:
+        cursor.execute("SELECT COUNT(*) FROM credit_transactions WHERE organization_id = %s", (organization_id,))
+        return cursor.fetchone()[0]
+    finally:
+        cursor.close()
+        connection.close()
+
+
+def list_for_organization(organization_id, limit, offset):
     connection = get_connection()
     cursor = connection.cursor(dictionary=True)
     try:
         cursor.execute(
             "SELECT * FROM credit_transactions WHERE organization_id = %s "
-            "ORDER BY created_at DESC, id DESC LIMIT %s",
-            (organization_id, limit),
+            "ORDER BY created_at DESC, id DESC LIMIT %s OFFSET %s",
+            (organization_id, limit, offset),
         )
         return cursor.fetchall()
     finally:

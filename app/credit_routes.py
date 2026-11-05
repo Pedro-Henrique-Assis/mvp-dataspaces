@@ -1,9 +1,14 @@
 from flask import Blueprint, abort, current_app, flash, redirect, render_template, request, url_for
 
 from app.auth import current_organization_id, login_required
-from app.repositories.credits import get_balance, list_for_organization, totals_for_organization
+from app.repositories.credits import (
+    count_for_organization,
+    get_balance,
+    list_for_organization,
+    totals_for_organization,
+)
 from app.repositories.pix_charges import expire_overdue, get_by_code
-from app.services.credit_service import confirm_top_up, open_top_up, package_price_usd
+from app.services.credit_service import confirm_top_up, count_pages, open_top_up, package_price_usd, parse_page
 
 
 credits_blueprint = Blueprint("credits", __name__, url_prefix="/credits")
@@ -15,6 +20,7 @@ TYPE_LABELS = {
     "request": "Requisição",
     "earning": "Recebimento",
 }
+PAGE_NOT_FOUND = "A página pesquisada não existe."
 
 
 @credits_blueprint.app_context_processor
@@ -29,6 +35,13 @@ def credit_balance():
 def index():
     organization_id = current_organization_id()
     expire_overdue(organization_id)
+    valid, page = parse_page(request.args.get("page"))
+    if not valid:
+        return render_template("error.html", message=PAGE_NOT_FOUND), 400
+    page_size = current_app.config["STATEMENT_PAGE_SIZE"]
+    total_pages = count_pages(count_for_organization(organization_id), page_size)
+    if page > total_pages:
+        return render_template("error.html", message=PAGE_NOT_FOUND), 404
     value = current_app.config["CREDIT_VALUE_USD"]
     packages = [
         {"credits": package, "price": package_price_usd(package, value)}
@@ -38,7 +51,9 @@ def index():
         "credits.html",
         totals=totals_for_organization(organization_id),
         packages=packages,
-        transactions=list_for_organization(organization_id),
+        transactions=list_for_organization(organization_id, page_size, (page - 1) * page_size),
+        page=page,
+        total_pages=total_pages,
         type_labels=TYPE_LABELS,
     )
 
