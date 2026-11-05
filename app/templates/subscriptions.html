@@ -2,6 +2,7 @@
 {% block title %}Assinaturas{% endblock %}
 {% block content %}
 <h1>Contratar uma API</h1>
+<p>Saldo: {{ credit_balance }} créditos</p>
 {% if not can_subscribe %}
 <div class="alert alert-error" role="alert">{{ message }}</div>
 {% else %}

@@ -3,7 +3,7 @@ from datetime import date
 
 from unittest.mock import patch
 
-from app import create_app, organization_routes
+from app import create_app, credit_routes, organization_routes
 
 
 class RegistrationFormTest(unittest.TestCase):
@@ -137,7 +137,7 @@ class OrganizationDetailTest(unittest.TestCase):
         if logged_in:
             with self.client.session_transaction() as session:
                 session["organization_id"] = logged_in
-        with patch.object(organization_routes, "get_organization", return_value=organization),                 patch.object(organization_routes, "get_credential", return_value=CREDENTIAL),                 patch.object(organization_routes, "list_apis_for_provider", return_value=[API]),                 patch.object(organization_routes, "list_plans", return_value=PLANS):
+        with patch.object(organization_routes, "get_organization", return_value=organization),                 patch.object(organization_routes, "get_credential", return_value=CREDENTIAL),                 patch.object(organization_routes, "list_apis_for_provider", return_value=[API]),                 patch.object(organization_routes, "list_plans", return_value=PLANS),                 patch.object(credit_routes, "get_balance", return_value=120):
             return self.client.get("/organizations/1")
 
     def test_shows_organization_data_and_credential_validity(self):

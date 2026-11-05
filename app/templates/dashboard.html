@@ -2,6 +2,7 @@
 {% block title %}Dashboard{% endblock %}
 {% block content %}
 <h1>Dashboard</h1>
+<p>Saldo: {{ credit_balance }} créditos</p>
 {% if credential %}
 <p>Credencial verificável emitida em {{ credential.issued_at }} e válida até {{ credential.expires_at }}.</p>
 {% endif %}

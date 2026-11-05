@@ -2,7 +2,7 @@ import unittest
 from datetime import date
 from unittest.mock import patch
 
-from app import create_app, routes
+from app import create_app, credit_routes, routes
 
 
 class DashboardTest(unittest.TestCase):
@@ -10,6 +10,9 @@ class DashboardTest(unittest.TestCase):
         self.client = create_app({"TESTING": True, "SECRET_KEY": "test"}).test_client()
         with self.client.session_transaction() as session:
             session["organization_id"] = 1
+        balance = patch.object(credit_routes, "get_balance", return_value=120)
+        balance.start()
+        self.addCleanup(balance.stop)
 
     def get(self, credential, subscriptions=()):
         with patch.object(routes, "list_public", return_value=[]), \
@@ -29,6 +32,9 @@ class DashboardTest(unittest.TestCase):
         html = self.get(None, [subscription])
         self.assertIn("5 créditos", html)
         self.assertNotIn("US$", html)
+
+    def test_shows_credit_balance(self):
+        self.assertIn("Saldo: 120 créditos", self.get(None))
 
     def test_dashboard_works_without_credential(self):
         self.assertIn("Dashboard", self.get(None))

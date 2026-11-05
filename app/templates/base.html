@@ -20,6 +20,7 @@
             <a href="{{ url_for('organizations.index') }}">Organizações</a>
             <a href="{{ url_for('subscriptions.index') }}">Assinaturas</a>
             <a href="{{ url_for('usage.index') }}">Consumo</a>
+            <a href="{{ url_for('credits.index') }}">Créditos: {{ credit_balance }}</a>
             <form class="logout-form" method="post" action="{{ url_for('auth.logout') }}"><button class="link-button" type="submit">Sair</button></form>
             {% else %}
             <a href="{{ url_for('main.home') }}">Início</a>

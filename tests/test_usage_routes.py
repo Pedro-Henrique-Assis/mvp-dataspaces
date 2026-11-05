@@ -1,7 +1,7 @@
 import unittest
 from unittest.mock import patch
 
-from app import create_app, usage_routes
+from app import create_app, credit_routes, usage_routes
 
 ITEM = {
     "api_name": "API de entregas",
@@ -17,6 +17,9 @@ class UsageRoutesTest(unittest.TestCase):
         self.client = create_app({"TESTING": True, "SECRET_KEY": "test"}).test_client()
         with self.client.session_transaction() as session:
             session["organization_id"] = 2
+        balance = patch.object(credit_routes, "get_balance", return_value=120)
+        balance.start()
+        self.addCleanup(balance.stop)
 
     def test_usage_shows_subscription_requests_and_total_in_credits(self):
         with patch.object(usage_routes, "summary_for_consumer", return_value=[ITEM]):

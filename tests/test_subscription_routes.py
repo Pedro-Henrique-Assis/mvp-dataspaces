@@ -2,7 +2,7 @@ import unittest
 from datetime import date
 from unittest.mock import patch
 
-from app import create_app, subscription_routes, usage_routes
+from app import create_app, credit_routes, subscription_routes, usage_routes
 
 CREDENTIAL = {
     "status": "active",
@@ -27,6 +27,9 @@ class SubscriptionRoutesTest(unittest.TestCase):
         self.client = create_app({"TESTING": True, "SECRET_KEY": "test"}).test_client()
         with self.client.session_transaction() as session:
             session["organization_id"] = 2
+        balance = patch.object(credit_routes, "get_balance", return_value=120)
+        balance.start()
+        self.addCleanup(balance.stop)
 
     def get(self, url="/subscriptions", credential=CREDENTIAL):
         with patch.object(subscription_routes, "list_available_for", return_value=APIS) as listing, \
