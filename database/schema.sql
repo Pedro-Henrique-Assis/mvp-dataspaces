@@ -16,7 +16,20 @@ CREATE TABLE organizations (
     website VARCHAR(160),
     status VARCHAR(20) NOT NULL DEFAULT 'pending',
     rejection_reason VARCHAR(255),
-    created_at DATETIME NOT NULL DEFAULT CURRENT_TIMESTAMP
+    credit_balance INT NOT NULL DEFAULT 0,
+    created_at DATETIME NOT NULL DEFAULT CURRENT_TIMESTAMP,
+    CHECK (credit_balance >= 0)
+);
+
+CREATE TABLE credit_transactions (
+    id INT AUTO_INCREMENT PRIMARY KEY,
+    organization_id INT NOT NULL,
+    amount INT NOT NULL,
+    type VARCHAR(20) NOT NULL,
+    description VARCHAR(255) NOT NULL,
+    balance_after INT NOT NULL,
+    created_at DATETIME NOT NULL DEFAULT CURRENT_TIMESTAMP,
+    FOREIGN KEY (organization_id) REFERENCES organizations(id)
 );
 
 CREATE TABLE admins (
