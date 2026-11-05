@@ -119,7 +119,7 @@ class StatementPageTest(unittest.TestCase):
             self.assertEqual(parse_page(value), (True, expected), value)
 
     def test_parse_page_rejects_everything_else(self):
-        for value in ["abc", "0", "-1", "1.5", " 2", "1e3", "²"]:
+        for value in ["abc", "0", "-1", "1.5", " 2", "1e3", "²", "9" * 5000]:
             self.assertEqual(parse_page(value), (False, None), value)
 
     def test_count_pages(self):

@@ -11,9 +11,15 @@ def package_price_usd(package, credit_value):
 def parse_page(value):
     if value is None or value == "":
         return True, 1
-    if not value.isdecimal() or int(value) < 1:
+    if not value.isdecimal():
         return False, None
-    return True, int(value)
+    try:
+        page = int(value)
+    except ValueError:
+        return False, None
+    if page < 1:
+        return False, None
+    return True, page
 
 
 def count_pages(total_items, per_page):
