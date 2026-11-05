@@ -1,6 +1,6 @@
 import secrets
 
-from app.repositories.pix_charges import create, expire_overdue, find_open
+from app.repositories.pix_charges import confirm, create, expire_overdue, find_open, get_by_code
 
 
 def package_price_usd(package, credit_value):
@@ -31,3 +31,17 @@ def open_top_up(organization_id, value, packages, credit_value, minutes):
         code = fake_pix_code(organization_id, package)
         create(organization_id, code, package, package_price_usd(package, credit_value), minutes)
     return True, code
+
+
+def confirm_top_up(organization_id, code):
+    expire_overdue(organization_id)
+    charge = get_by_code(organization_id, code)
+    if charge is None:
+        return "not_found", ""
+    result = confirm(organization_id, code, f"Recarga via PIX simulado · {code}")
+    messages = {
+        "paid": f"Pagamento simulado confirmado. +{charge['credits']} créditos.",
+        "already_paid": "Esta cobrança já foi confirmada. Os créditos foram adicionados uma única vez.",
+        "expired": "Esta cobrança expirou. Gere uma nova.",
+    }
+    return result, messages.get(result, "")

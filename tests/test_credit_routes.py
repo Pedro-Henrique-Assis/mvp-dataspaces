@@ -4,6 +4,7 @@ from decimal import Decimal
 from unittest.mock import patch
 
 from app import create_app, credit_routes, routes, subscription_routes
+from app.services import credit_service
 
 
 class CreditMenuTest(unittest.TestCase):
@@ -177,6 +178,40 @@ class TopUpTest(unittest.TestCase):
 
     def test_unknown_charge_is_404(self):
         self.assertEqual(self.show(None).status_code, 404)
+
+    def confirm(self, result, message=""):
+        self.login()
+        with patch.object(credit_routes, "confirm_top_up", return_value=(result, message)) as confirm_top_up:
+            response = self.client.post("/credits/top-ups/ABC/confirmation")
+        confirm_top_up.assert_called_once_with(2, "ABC")
+        return response
+
+    def test_confirm_paid_redirects_to_credits(self):
+        response = self.confirm("paid", "Pagamento simulado confirmado. +500 créditos.")
+        self.assertTrue(response.headers["Location"].endswith("/credits"))
+        self.assertEqual(self.flashes()[-1], ("success", "Pagamento simulado confirmado. +500 créditos."))
+
+    def test_confirm_already_paid_redirects_to_credits_with_error(self):
+        response = self.confirm("already_paid", "Esta cobrança já foi confirmada.")
+        self.assertTrue(response.headers["Location"].endswith("/credits"))
+        self.assertEqual(self.flashes()[-1], ("error", "Esta cobrança já foi confirmada."))
+
+    def test_confirm_expired_redirects_to_charge(self):
+        response = self.confirm("expired", "Esta cobrança expirou. Gere uma nova.")
+        self.assertTrue(response.headers["Location"].endswith("/credits/top-ups/ABC"))
+        self.assertEqual(self.flashes()[-1], ("error", "Esta cobrança expirou. Gere uma nova."))
+
+    def test_confirm_not_found_is_404(self):
+        self.assertEqual(self.confirm("not_found").status_code, 404)
+
+    def test_confirm_charge_of_other_organization_is_404(self):
+        with self.client.session_transaction() as session:
+            session["organization_id"] = 3
+        with patch.object(credit_service, "expire_overdue"),                 patch.object(credit_service, "get_by_code", return_value=None) as get_by_code,                 patch.object(credit_service, "confirm", return_value="not_found") as confirm:
+            response = self.client.post("/credits/top-ups/ABC/confirmation")
+        self.assertEqual(response.status_code, 404)
+        get_by_code.assert_called_once_with(3, "ABC")
+        confirm.assert_not_called()
 
     def test_old_new_route_is_gone(self):
         self.login()

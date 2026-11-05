@@ -1,9 +1,9 @@
 from flask import Blueprint, abort, current_app, flash, redirect, render_template, request, url_for
 
 from app.auth import current_organization_id, login_required
-from app.repositories.credits import add as add_credits, get_balance, list_for_organization, totals_for_organization
+from app.repositories.credits import get_balance, list_for_organization, totals_for_organization
 from app.repositories.pix_charges import expire_overdue, get_by_code
-from app.services.credit_service import open_top_up, package_price_usd
+from app.services.credit_service import confirm_top_up, open_top_up, package_price_usd
 
 
 credits_blueprint = Blueprint("credits", __name__, url_prefix="/credits")
@@ -74,10 +74,13 @@ def show_top_up(code):
 @credits_blueprint.post("/top-ups/<code>/confirmation")
 @login_required
 def confirm_payment(code):
-    organization_id = current_organization_id()
-    charge = get_by_code(organization_id, code)
-    if charge is None:
+    result, message = confirm_top_up(current_organization_id(), code)
+    if result == "not_found":
         abort(404)
-    add_credits(organization_id, charge["credits"], "top_up", f"Recarga via PIX simulado · {code}")
-    flash(f"Pagamento simulado confirmado. +{charge['credits']} créditos.", "success")
+    if result == "paid":
+        flash(message, "success")
+        return redirect(url_for("credits.index"))
+    flash(message, "error")
+    if result == "expired":
+        return redirect(url_for("credits.show_top_up", code=code))
     return redirect(url_for("credits.index"))

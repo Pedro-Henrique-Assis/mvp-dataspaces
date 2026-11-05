@@ -4,7 +4,7 @@ from decimal import Decimal
 from unittest.mock import patch
 
 from app.services import credit_service
-from app.services.credit_service import fake_pix_code, open_top_up, package_price_usd, validate_package
+from app.services.credit_service import confirm_top_up, fake_pix_code, open_top_up, package_price_usd, validate_package
 
 
 class PackagePriceTest(unittest.TestCase):
@@ -76,6 +76,33 @@ class OpenTopUpTest(unittest.TestCase):
         self.find_open.return_value = "ABC"
         self.open("1000")
         self.find_open.assert_called_once_with(2, 1000)
+
+
+class ConfirmTopUpTest(unittest.TestCase):
+    def setUp(self):
+        for name in ["expire_overdue", "get_by_code", "confirm"]:
+            patcher = patch.object(credit_service, name)
+            setattr(self, name, patcher.start())
+            self.addCleanup(patcher.stop)
+        self.get_by_code.return_value = {"credits": 500}
+
+    def test_confirm_top_up_messages(self):
+        cases = {
+            "paid": "Pagamento simulado confirmado. +500 créditos.",
+            "already_paid": "Esta cobrança já foi confirmada. Os créditos foram adicionados uma única vez.",
+            "expired": "Esta cobrança expirou. Gere uma nova.",
+        }
+        for result, message in cases.items():
+            self.confirm.return_value = result
+            self.assertEqual(confirm_top_up(2, "ABC"), (result, message))
+        self.confirm.assert_called_with(2, "ABC", "Recarga via PIX simulado · ABC")
+        self.expire_overdue.assert_called_with(2)
+
+    def test_confirm_top_up_unknown_charge(self):
+        self.get_by_code.return_value = None
+        self.assertEqual(confirm_top_up(2, "ABC"), ("not_found", ""))
+        self.get_by_code.assert_called_once_with(2, "ABC")
+        self.confirm.assert_not_called()
 
 
 if __name__ == "__main__":
