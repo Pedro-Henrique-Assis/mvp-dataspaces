@@ -1,7 +1,8 @@
+import re
 import unittest
 from decimal import Decimal
 
-from app.services.credit_service import package_price_usd, validate_package
+from app.services.credit_service import fake_pix_code, package_price_usd, validate_package
 
 
 class PackagePriceTest(unittest.TestCase):
@@ -32,6 +33,15 @@ class ValidatePackageTest(unittest.TestCase):
     def test_rejects_negative_and_zero(self):
         for value in ["-500", "0", -500]:
             self.assertEqual(validate_package(value, PACKAGES), INVALID, value)
+
+
+class FakePixCodeTest(unittest.TestCase):
+    def test_code_has_simulation_format(self):
+        code = fake_pix_code(2, 500)
+        self.assertRegex(code, r"^00020126SIMULACAO-DATASPACE-2-500-[0-9A-F]{8}$")
+
+    def test_each_code_is_different(self):
+        self.assertNotEqual(fake_pix_code(2, 500), fake_pix_code(2, 500))
 
 
 if __name__ == "__main__":

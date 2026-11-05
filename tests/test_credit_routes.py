@@ -114,5 +114,66 @@ class CreditsPageTest(unittest.TestCase):
         self.assertIn("Nenhuma movimentação", self.page([]))
 
 
+class TopUpTest(unittest.TestCase):
+    def setUp(self):
+        self.client = create_app({"TESTING": True, "SECRET_KEY": "test"}).test_client()
+        balance = patch.object(credit_routes, "get_balance", return_value=120)
+        balance.start()
+        self.addCleanup(balance.stop)
+
+    def login(self):
+        with self.client.session_transaction() as session:
+            session["organization_id"] = 2
+
+    def flashes(self):
+        with self.client.session_transaction() as session:
+            return session["_flashes"]
+
+    def test_payment_page_shows_simulated_pix(self):
+        self.login()
+        html = self.client.get("/credits/top-ups/new?package=500").get_data(as_text=True)
+        for text in ["500 créditos", "US$ 50.00", "00020126SIMULACAO-DATASPACE-2-500-",
+                     "Ambiente de simulação. Nenhum valor real é cobrado.",
+                     "QR Code indisponível na simulação", "Confirmar pagamento simulado", "Cancelar",
+                     'action="/credits/top-ups"', 'name="package" value="500"']:
+            self.assertIn(text, html)
+
+    def test_payment_page_rejects_invalid_package(self):
+        self.login()
+        for url in ["/credits/top-ups/new?package=999999", "/credits/top-ups/new?package=abc", "/credits/top-ups/new"]:
+            response = self.client.get(url)
+            self.assertTrue(response.headers["Location"].endswith("/credits"), url)
+            self.assertEqual(self.flashes()[-1], ("error", "Pacote de créditos inválido."))
+
+    def test_confirmation_credits_the_package(self):
+        self.login()
+        with patch.object(credit_routes, "add_credits") as add:
+            response = self.client.post("/credits/top-ups", data={"package": "500"})
+        add.assert_called_once_with(2, 500, "top_up", "Recarga via PIX simulado")
+        self.assertTrue(response.headers["Location"].endswith("/credits"))
+        self.assertEqual(self.flashes()[0], ("success", "Pagamento simulado confirmado. +500 créditos."))
+
+    def test_confirmation_rejects_tampered_package(self):
+        self.login()
+        for package in ["999999", "-500", "abc", ""]:
+            with patch.object(credit_routes, "add_credits") as add:
+                response = self.client.post("/credits/top-ups", data={"package": package})
+            add.assert_not_called()
+            self.assertTrue(response.headers["Location"].endswith("/credits"))
+            self.assertEqual(self.flashes()[-1], ("error", "Pacote de créditos inválido."))
+
+    def test_routes_require_login(self):
+        with patch.object(credit_routes, "add_credits") as add:
+            post = self.client.post("/credits/top-ups", data={"package": "500"})
+        get = self.client.get("/credits/top-ups/new?package=500")
+        add.assert_not_called()
+        for response in (post, get):
+            self.assertTrue(response.headers["Location"].endswith("/login"))
+
+    def test_confirmation_is_post_only(self):
+        self.login()
+        self.assertEqual(self.client.get("/credits/top-ups").status_code, 405)
+
+
 if __name__ == "__main__":
     unittest.main()

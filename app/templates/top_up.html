@@ -1,0 +1,20 @@
+{% extends "base.html" %}
+{% block title %}Recarga via PIX{% endblock %}
+{% block content %}
+<h1>Recarga via PIX</h1>
+<section class="card">
+    <div class="alert alert-error" role="alert">Ambiente de simulação. Nenhum valor real é cobrado.</div>
+    <p>Pacote: {{ package }} créditos</p>
+    <p>Valor: US$ {{ '%.2f'|format(price) }}</p>
+    <div class="card">QR Code indisponível na simulação</div>
+    <p>Código PIX copia e cola:</p>
+    <p><code>{{ pix_code }}</code></p>
+    <form method="post" action="{{ url_for('credits.create_top_up') }}">
+        <input type="hidden" name="package" value="{{ package }}">
+        <div class="card-actions">
+            <button class="button" type="submit">Confirmar pagamento simulado</button>
+            <a class="button button-secondary" href="{{ url_for('credits.index') }}">Cancelar</a>
+        </div>
+    </form>
+</section>
+{% endblock %}

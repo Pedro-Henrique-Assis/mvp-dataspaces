@@ -14,7 +14,7 @@
     <article class="card">
         <h3>{{ package.credits }} créditos</h3>
         <p>US$ {{ '%.2f'|format(package.price) }}</p>
-        <a class="button" href="/credits/top-ups/new?package={{ package.credits }}">Recarregar</a>
+        <a class="button" href="{{ url_for('credits.new_top_up', package=package.credits) }}">Recarregar</a>
     </article>
     {% endfor %}
 </section>
