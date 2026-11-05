@@ -34,7 +34,7 @@ mysql -u root -p < database/schema.sql
 mysql -u root -p dataspaces_mvp < database/seed.sql
 ```
 
-O seed cria o administrador e as duas organizações de demonstração (e-mails e senhas no README). Se o banco já existir com um schema antigo, apague-o antes com `DROP DATABASE dataspaces_mvp;`, pois o projeto não usa migrações.
+O seed cria o administrador, as duas organizações de demonstração (e-mails e senhas no README) e os saldos iniciais de créditos (TransLog 1000 e CargaCerta 120). Se o banco já existir com um schema antigo, apague-o antes com `DROP DATABASE dataspaces_mvp;`, pois o projeto não usa migrações.
 
 ## 4. Aplicação
 
