@@ -32,6 +32,19 @@ CREATE TABLE credit_transactions (
     FOREIGN KEY (organization_id) REFERENCES organizations(id)
 );
 
+CREATE TABLE pix_charges (
+    id INT AUTO_INCREMENT PRIMARY KEY,
+    organization_id INT NOT NULL,
+    code VARCHAR(80) NOT NULL UNIQUE,
+    credits INT NOT NULL,
+    amount_usd DECIMAL(10, 2) NOT NULL,
+    status VARCHAR(10) NOT NULL DEFAULT 'pending',
+    created_at DATETIME NOT NULL DEFAULT CURRENT_TIMESTAMP,
+    expires_at DATETIME NOT NULL,
+    paid_at DATETIME,
+    FOREIGN KEY (organization_id) REFERENCES organizations(id)
+);
+
 CREATE TABLE admins (
     id INT AUTO_INCREMENT PRIMARY KEY,
     name VARCHAR(120) NOT NULL,
@@ -101,3 +114,8 @@ CREATE TABLE api_requests (
     requested_at DATETIME NOT NULL DEFAULT CURRENT_TIMESTAMP,
     FOREIGN KEY (subscription_id) REFERENCES subscriptions(id)
 );
+
+CREATE EVENT IF NOT EXISTS expire_pix_charges
+ON SCHEDULE EVERY 1 MINUTE
+DO UPDATE pix_charges SET status = 'expired'
+   WHERE status = 'pending' AND expires_at < NOW();
