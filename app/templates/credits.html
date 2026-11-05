@@ -2,5 +2,36 @@
 {% block title %}Créditos{% endblock %}
 {% block content %}
 <h1>Créditos</h1>
-<p>Saldo atual: {{ credit_balance }} créditos</p>
+<section class="card">
+    <p>Saldo atual: {{ credit_balance }} créditos</p>
+    <p>Total gasto: {{ totals.spent }} créditos</p>
+    <p>Total recebido: {{ totals.received }} créditos</p>
+</section>
+
+<h2>Recarregar</h2>
+<section class="grid">
+    {% for package in packages %}
+    <article class="card">
+        <h3>{{ package.credits }} créditos</h3>
+        <p>US$ {{ '%.2f'|format(package.price) }}</p>
+        <a class="button" href="/credits/top-ups/new?package={{ package.credits }}">Recarregar</a>
+    </article>
+    {% endfor %}
+</section>
+
+<h2>Extrato</h2>
+<table class="table">
+    <tr><th>Data</th><th>Descrição</th><th>Tipo</th><th>Valor</th><th>Saldo após</th></tr>
+    {% for item in transactions %}
+    <tr>
+        <td>{{ item.created_at.strftime('%Y-%m-%d %H:%M') }}</td>
+        <td>{{ item.description }}</td>
+        <td>{{ type_labels[item.type] }}</td>
+        <td class="{{ 'credit-in' if item.amount > 0 else 'credit-out' }}">{{ '%+d'|format(item.amount) }}</td>
+        <td>{{ item.balance_after }}</td>
+    </tr>
+    {% else %}
+    <tr><td colspan="5">Nenhuma movimentação.</td></tr>
+    {% endfor %}
+</table>
 {% endblock %}

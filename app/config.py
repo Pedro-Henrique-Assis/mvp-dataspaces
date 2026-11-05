@@ -1,4 +1,5 @@
 import os
+from decimal import Decimal
 
 
 class Config:
@@ -12,4 +13,6 @@ class Config:
     }
     TRUSTED_ISSUER_DID = "did:example:dataspace-authority"
     SESSION_COOKIE_SAMESITE = "Lax"
+    CREDIT_VALUE_USD = Decimal("0.10")
+    CREDIT_PACKAGES = (500, 1000, 2500)
     WELCOME_CREDITS = 300
