@@ -3,18 +3,35 @@
 {% block content %}
 <h1>Recarga via PIX</h1>
 <section class="card">
+    {% if charge.status == 'pending' %}
     <div class="alert alert-error" role="alert">Ambiente de simulação. Nenhum valor real é cobrado.</div>
-    <p>Pacote: {{ package }} créditos</p>
-    <p>Valor: US$ {{ '%.2f'|format(price) }}</p>
+    <p>Pacote: {{ charge.credits }} créditos</p>
+    <p>Valor: US$ {{ '%.2f'|format(charge.amount_usd) }}</p>
+    <p>Válida até {{ charge.expires_at.strftime('%H:%M') }}</p>
     <div class="card">QR Code indisponível na simulação</div>
     <p>Código PIX copia e cola:</p>
-    <p><code>{{ pix_code }}</code></p>
-    <form method="post" action="{{ url_for('credits.create_top_up') }}">
-        <input type="hidden" name="package" value="{{ package }}">
+    <p><code>{{ charge.code }}</code></p>
+    <form method="post" action="{{ url_for('credits.confirm_payment', code=charge.code) }}">
         <div class="card-actions">
             <button class="button" type="submit">Confirmar pagamento simulado</button>
             <a class="button button-secondary" href="{{ url_for('credits.index') }}">Cancelar</a>
         </div>
     </form>
+    {% elif charge.status == 'paid' %}
+    <p>Pacote: {{ charge.credits }} créditos</p>
+    <p>Valor: US$ {{ '%.2f'|format(charge.amount_usd) }}</p>
+    <p>Pagamento confirmado em {{ charge.paid_at.strftime('%d/%m/%Y %H:%M') }}.</p>
+    <a class="button button-secondary" href="{{ url_for('credits.index') }}">Voltar aos créditos</a>
+    {% else %}
+    <div class="alert alert-error" role="alert">Cobrança expirada.</div>
+    <p>Pacote: {{ charge.credits }} créditos</p>
+    <form method="post" action="{{ url_for('credits.create_top_up') }}">
+        <input type="hidden" name="package" value="{{ charge.credits }}">
+        <div class="card-actions">
+            <button class="button" type="submit">Gerar nova cobrança</button>
+            <a class="button button-secondary" href="{{ url_for('credits.index') }}">Cancelar</a>
+        </div>
+    </form>
+    {% endif %}
 </section>
 {% endblock %}

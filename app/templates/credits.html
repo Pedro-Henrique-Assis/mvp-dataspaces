@@ -14,7 +14,10 @@
     <article class="card">
         <h3>{{ package.credits }} créditos</h3>
         <p>US$ {{ '%.2f'|format(package.price) }}</p>
-        <a class="button" href="{{ url_for('credits.new_top_up', package=package.credits) }}">Recarregar</a>
+        <form method="post" action="{{ url_for('credits.create_top_up') }}">
+            <input type="hidden" name="package" value="{{ package.credits }}">
+            <button class="button" type="submit">Recarregar</button>
+        </form>
     </article>
     {% endfor %}
 </section>
