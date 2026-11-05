@@ -13,9 +13,10 @@ CREDENTIAL = {
     "role_consumer": True,
     "expires_at": date(2030, 12, 31),
 }
-ORGANIZATION = {"id": 1, "did": "did:example:translog", "status": "active"}
+ORGANIZATION = {"id": 1, "name": "TransLog Brasil", "did": "did:example:translog", "status": "active", "credit_balance": 3}
 API = {
     "id": 2,
+    "provider_org_id": 2,
     "name": "API de veículos",
     "provider_name": "CargaCerta Transportes",
     "provider_status": "active",
@@ -41,14 +42,14 @@ class ApiRoutesTest(unittest.TestCase):
         with self.client.session_transaction() as session:
             session["organization_id"] = 1
 
-    def request(self, path=URL, api=API, credential=CREDENTIAL, subscription=SIMPLE):
+    def request(self, path=URL, api=API, credential=CREDENTIAL, subscription=SIMPLE, paid=True):
         self.login()
         patchers = (
             patch.object(api_routes, "get_by_slug", return_value=api),
             patch.object(api_routes, "get_for_organization", return_value=credential),
             patch.object(api_routes, "get_organization", return_value=ORGANIZATION),
             patch.object(api_routes, "find_active", return_value=subscription),
-            patch.object(api_routes, "register_request"),
+            patch.object(api_routes, "register_paid_request", return_value=paid),
         )
         mocks = [p.start() for p in patchers]
         self.addCleanup(lambda: [p.stop() for p in patchers])
@@ -72,6 +73,29 @@ class ApiRoutesTest(unittest.TestCase):
             },
         )
         register.assert_called_once()
+
+    def test_charge_is_made_for_the_consumer_and_provider(self):
+        _, register = self.request()
+        args = register.call_args.args
+        self.assertEqual(args[:3], (SIMPLE, 1, 2))
+        self.assertEqual(args[3:6], ("basic", URL, 5))
+        self.assertEqual(
+            args[6],
+            {
+                "consumer": "Requisição basic · API de veículos",
+                "provider": "Requisição de TransLog Brasil · API de veículos",
+            },
+        )
+
+    def test_without_credits_returns_402_and_no_data(self):
+        response, _ = self.request(paid=False)
+        self.assertEqual(response.status_code, 402)
+        self.assertEqual(response.json, {"error": "Créditos insuficientes. Custo: 5, saldo: 3."})
+
+    def test_credits_are_checked_after_authorization(self):
+        response, register = self.request(subscription=None, paid=False)
+        self.assertEqual(response.status_code, 403)
+        register.assert_not_called()
 
     def test_premium_with_premium_plan_returns_premium_response(self):
         response, _ = self.request(URL + "?level=premium", subscription=PREMIUM)
