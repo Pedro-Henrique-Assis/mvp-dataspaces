@@ -78,8 +78,24 @@ Sem saldo suficiente, a API responde `402` com `{"error": "Créditos insuficient
 - A fornecedora recebe 100% da taxa de assinatura e de cada requisição. Assinaturas e requisições recusadas por falta de saldo não movimentam créditos.
 - O saldo aparece no menu. A página `/credits` mostra o saldo, os totais gasto e recebido, os pacotes de recarga e o extrato de movimentações.
 - Organizações novas recebem 300 créditos de boas-vindas quando o administrador aprova o cadastro.
-- A recarga é um PIX simulado, com pacotes fixos de 500, 1000 e 2500 créditos. Cada crédito vale US$ 0,10, valor usado apenas para exibir o preço do pacote. A tela de pagamento mostra um código fictício e, ao confirmar, os créditos são adicionados. Nenhum valor real é cobrado.
+- A recarga é um PIX simulado, com pacotes fixos de 500, 1000 e 2500 créditos. Cada crédito vale US$ 0,10, valor usado apenas para exibir o preço do pacote. Nenhum valor real é cobrado.
+- Fluxo da cobrança:
+  1. Ao escolher um pacote em `/credits`, o sistema grava uma cobrança PIX (tabela `pix_charges`) com um código fictício e abre a tela de pagamento. A cobrança vale 15 minutos.
+  2. Escolher o mesmo pacote de novo, ou recarregar a tela, reaproveita a cobrança pendente e ainda válida, com o mesmo código.
+  3. Ao confirmar o pagamento simulado, os créditos são adicionados uma única vez. Confirmar de novo (duplo clique, botão voltar do navegador) mostra "Esta cobrança já foi confirmada" e não credita outra vez.
+  4. Depois de 15 minutos a cobrança passa para `expired`: a confirmação é recusada com "Esta cobrança expirou. Gere uma nova." e a tela oferece o botão para gerar uma nova cobrança.
+- O extrato é paginado, com 20 movimentações por página, da mais recente para a mais antiga. A navegação é feita por `/credits?page=N`. Um `page` inválido (`abc`, `0`, `-1`) responde 400 e uma página além da última responde 404, ambos com a mensagem "A página pesquisada não existe.".
+- O campo `balance` da resposta da API é o saldo imediatamente após a cobrança daquela requisição, igual ao `balance_after` da linha correspondente no extrato.
 - Débito, crédito e extrato são gravados na mesma transação, então o saldo de cada organização sempre é igual à soma do extrato.
+
+A expiração é gravada no banco pelo próprio código, a cada acesso às telas de crédito e de cobrança, então a regra não depende de nada além da aplicação. O `schema.sql` também cria o evento `expire_pix_charges`, que marca como `expired` as cobranças vencidas a cada minuto, mesmo sem acesso. O evento é opcional e só funciona com o agendador de eventos do MySQL ligado. Para conferir e ligar (MariaDB/XAMPP):
+
+```sql
+SHOW VARIABLES LIKE 'event_scheduler';
+SET GLOBAL event_scheduler = ON;
+```
+
+O `SET GLOBAL` vale até reiniciar o servidor.
 
 ## Como executar localmente
 
