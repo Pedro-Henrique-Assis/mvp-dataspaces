@@ -14,7 +14,10 @@
     <article class="card">
         <h3>{{ package.credits }} créditos</h3>
         <p>US$ {{ '%.2f'|format(package.price) }}</p>
-        <a class="button" href="{{ url_for('credits.new_top_up', package=package.credits) }}">Recarregar</a>
+        <form method="post" action="{{ url_for('credits.create_top_up') }}">
+            <input type="hidden" name="package" value="{{ package.credits }}">
+            <button class="button" type="submit">Recarregar</button>
+        </form>
     </article>
     {% endfor %}
 </section>
@@ -34,4 +37,11 @@
     <tr><td colspan="5">Nenhuma movimentação.</td></tr>
     {% endfor %}
 </table>
+{% if total_pages > 1 %}
+<p>Página {{ page }} de {{ total_pages }}</p>
+<p>
+    {% if page > 1 %}<a href="{{ url_for('credits.index', page=page - 1) }}">Anterior</a>{% endif %}
+    {% if page < total_pages %}<a href="{{ url_for('credits.index', page=page + 1) }}">Próxima</a>{% endif %}
+</p>
+{% endif %}
 {% endblock %}

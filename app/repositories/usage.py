@@ -7,8 +7,10 @@ def register_paid_request(subscription, consumer_org_id, provider_org_id, access
     cursor = connection.cursor()
     try:
         if not credits.debit(cursor, consumer_org_id, price):
+            cursor.execute("SELECT credit_balance FROM organizations WHERE id = %s", (consumer_org_id,))
+            balance = cursor.fetchone()[0]
             connection.rollback()
-            return False
+            return False, balance
         credits.credit(cursor, provider_org_id, price)
         cursor.execute(
             "INSERT INTO api_requests "
@@ -16,10 +18,10 @@ def register_paid_request(subscription, consumer_org_id, provider_org_id, access
             "VALUES (%s, %s, %s, %s, TRUE)",
             (subscription["id"], access_level, endpoint, price),
         )
-        credits.log(cursor, consumer_org_id, -price, "request", descriptions["consumer"])
+        balance = credits.log(cursor, consumer_org_id, -price, "request", descriptions["consumer"])
         credits.log(cursor, provider_org_id, price, "earning", descriptions["provider"])
         connection.commit()
-        return True
+        return True, balance
     except Exception:
         connection.rollback()
         raise

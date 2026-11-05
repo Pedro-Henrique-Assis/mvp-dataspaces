@@ -1,8 +1,14 @@
-from flask import Blueprint, current_app, flash, redirect, render_template, request, url_for
+from flask import Blueprint, abort, current_app, flash, redirect, render_template, request, url_for
 
 from app.auth import current_organization_id, login_required
-from app.repositories.credits import add as add_credits, get_balance, list_for_organization, totals_for_organization
-from app.services.credit_service import fake_pix_code, package_price_usd, validate_package
+from app.repositories.credits import (
+    count_for_organization,
+    get_balance,
+    list_for_organization,
+    totals_for_organization,
+)
+from app.repositories.pix_charges import expire_overdue, get_by_code
+from app.services.credit_service import confirm_top_up, count_pages, open_top_up, package_price_usd, parse_page
 
 
 credits_blueprint = Blueprint("credits", __name__, url_prefix="/credits")
@@ -14,6 +20,7 @@ TYPE_LABELS = {
     "request": "Requisição",
     "earning": "Recebimento",
 }
+PAGE_NOT_FOUND = "A página pesquisada não existe."
 
 
 @credits_blueprint.app_context_processor
@@ -27,6 +34,14 @@ def credit_balance():
 @login_required
 def index():
     organization_id = current_organization_id()
+    expire_overdue(organization_id)
+    valid, page = parse_page(request.args.get("page"))
+    if not valid:
+        return render_template("error.html", message=PAGE_NOT_FOUND), 400
+    page_size = current_app.config["STATEMENT_PAGE_SIZE"]
+    total_pages = count_pages(count_for_organization(organization_id), page_size)
+    if page > total_pages:
+        return render_template("error.html", message=PAGE_NOT_FOUND), 404
     value = current_app.config["CREDIT_VALUE_USD"]
     packages = [
         {"credits": package, "price": package_price_usd(package, value)}
@@ -36,33 +51,51 @@ def index():
         "credits.html",
         totals=totals_for_organization(organization_id),
         packages=packages,
-        transactions=list_for_organization(organization_id),
+        transactions=list_for_organization(organization_id, page_size, (page - 1) * page_size),
+        page=page,
+        total_pages=total_pages,
         type_labels=TYPE_LABELS,
-    )
-
-
-@credits_blueprint.get("/top-ups/new")
-@login_required
-def new_top_up():
-    valid, package = validate_package(request.args.get("package"), current_app.config["CREDIT_PACKAGES"])
-    if not valid:
-        flash(package, "error")
-        return redirect(url_for("credits.index"))
-    return render_template(
-        "top_up.html",
-        package=package,
-        price=package_price_usd(package, current_app.config["CREDIT_VALUE_USD"]),
-        pix_code=fake_pix_code(current_organization_id(), package),
     )
 
 
 @credits_blueprint.post("/top-ups")
 @login_required
 def create_top_up():
-    valid, package = validate_package(request.form.get("package"), current_app.config["CREDIT_PACKAGES"])
+    config = current_app.config
+    valid, result = open_top_up(
+        current_organization_id(),
+        request.form.get("package"),
+        config["CREDIT_PACKAGES"],
+        config["CREDIT_VALUE_USD"],
+        config["PIX_CHARGE_MINUTES"],
+    )
     if not valid:
-        flash(package, "error")
+        flash(result, "error")
         return redirect(url_for("credits.index"))
-    add_credits(current_organization_id(), package, "top_up", "Recarga via PIX simulado")
-    flash(f"Pagamento simulado confirmado. +{package} créditos.", "success")
+    return redirect(url_for("credits.show_top_up", code=result))
+
+
+@credits_blueprint.get("/top-ups/<code>")
+@login_required
+def show_top_up(code):
+    organization_id = current_organization_id()
+    expire_overdue(organization_id)
+    charge = get_by_code(organization_id, code)
+    if charge is None:
+        abort(404)
+    return render_template("top_up.html", charge=charge)
+
+
+@credits_blueprint.post("/top-ups/<code>/confirmation")
+@login_required
+def confirm_payment(code):
+    result, message = confirm_top_up(current_organization_id(), code)
+    if result == "not_found":
+        abort(404)
+    if result == "paid":
+        flash(message, "success")
+        return redirect(url_for("credits.index"))
+    flash(message, "error")
+    if result == "expired":
+        return redirect(url_for("credits.show_top_up", code=code))
     return redirect(url_for("credits.index"))

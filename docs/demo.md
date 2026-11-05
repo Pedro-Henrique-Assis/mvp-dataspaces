@@ -22,16 +22,21 @@ Preços: plano simples = 100 créditos de assinatura + 5 por requisição; plano
 4. Consultar `/api/v1/apis/entregas/data?level=premium` e mostrar o bloqueio (403). O saldo não muda.
 5. Repetir a consulta básica até o saldo chegar a 0. A requisição seguinte responde `402` com "Créditos insuficientes" e não entrega dados.
 6. Abrir **Créditos**. Mostrar o saldo, os totais gasto e recebido e o extrato com a assinatura e as requisições.
-7. Clicar em **Recarregar** no pacote de 500 créditos. Na tela de pagamento simulado, mostrar o aviso de simulação e o código fictício, e **Confirmar pagamento simulado**. O saldo passa a 500 e a consulta volta a funcionar.
-8. Com 500 créditos, contratar o plano premium (250) da API da fornecedora recém-aprovada e consultar básico e premium, mostrando o custo de 2 créditos por requisição.
-9. Abrir **Consumo** e explicar assinatura, requisições e total em créditos.
-10. Entrar como TransLog e abrir **Créditos**: o saldo subiu, o total recebido mostra a taxa de assinatura e as requisições, e o extrato tem os lançamentos de "Recebimento".
+7. Clicar em **Recarregar** no pacote de 500 créditos. A cobrança é gerada: mostrar o aviso de simulação, o código fictício e a validade de 15 minutos. Recarregar a página (F5) e ver o mesmo código.
+8. Clicar em **Confirmar pagamento simulado**. O saldo passa a 500 e a consulta volta a funcionar.
+9. Confirmar de novo: voltar pelo botão do navegador ou, de forma mais confiável, abrir a mesma cobrança em duas abas e confirmar nas duas. Na segunda aparece "Esta cobrança já foi confirmada. Os créditos foram adicionados uma única vez." e o saldo continua 500.
+10. Com 500 créditos, contratar o plano premium (250) da API da fornecedora recém-aprovada e consultar básico e premium, mostrando o custo de 2 créditos por requisição.
+11. Comparar o `balance` da resposta da API com o `balance_after` da linha de requisição mais recente no extrato em **Créditos**: são o mesmo valor.
+12. Abrir **Consumo** e explicar assinatura, requisições e total em créditos.
+13. Entrar como TransLog e abrir **Créditos**: o saldo subiu, o total recebido mostra a taxa de assinatura e as requisições, e o extrato tem os lançamentos de "Recebimento".
+14. Com o extrato longo (mais de 20 movimentações, por exemplo após repetir várias consultas), navegar pelas páginas com **Anterior** e **Próxima**. Abrir `/credits?page=999` mostra "A página pesquisada não existe." (404) e `/credits?page=abc` mostra a mesma mensagem (400).
 
 ## 3. Regras para mostrar se houver tempo
 
 - Uma organização não assina a própria API.
 - Uma organização só fornecedora (sem papel de consumidora) vê a mensagem na tela de assinaturas e recebe 403 ao consumir.
 - A fila de aprovação e `/admin/...` respondem 403 para organizações; o administrador é redirecionado ao tentar abrir páginas de organização.
-- Alterar o pacote na URL (por exemplo, `?package=999999`) é recusado com "Pacote de créditos inválido." e nenhum crédito é adicionado.
+- Enviar um pacote inválido em `POST /credits/top-ups` (por exemplo, `package=999999`) é recusado com "Pacote de créditos inválido." e nenhuma cobrança é criada.
+- Uma cobrança não confirmada em 15 minutos expira: a confirmação responde "Esta cobrança expirou. Gere uma nova." e a tela oferece **Gerar nova cobrança**. Para acelerar, rode `UPDATE pix_charges SET expires_at = NOW() - INTERVAL 1 MINUTE WHERE status = 'pending';`.
 - Uma assinatura sem saldo para a taxa é recusada com o custo e o saldo, e nada é gravado.
 - O saldo de cada organização é sempre igual à soma do extrato.

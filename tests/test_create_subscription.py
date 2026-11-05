@@ -5,7 +5,7 @@ from unittest.mock import patch
 from app.services import subscription_service as service
 
 ISSUER = "did:example:dataspace-authority"
-CONSUMER = {"id": 2, "name": "CargaCerta", "did": "did:example:cargacerta", "credit_balance": 40}
+CONSUMER = {"id": 2, "name": "CargaCerta", "did": "did:example:cargacerta", "credit_balance": 120}
 CREDENTIAL = {
     "status": "active",
     "issuer_did": ISSUER,
@@ -19,7 +19,7 @@ PROVIDER_API = {"id": 1, "name": "API de entregas", "provider_org_id": 1, "provi
 PLAN = {"id": 1, "name": "Plano simples", "subscription_price_credits": 100}
 
 
-def run(api, plan, existing=None, credential=CREDENTIAL, paid=7):
+def run(api, plan, existing=None, credential=CREDENTIAL, paid=(7, 20)):
     with patch.object(service, "get_organization", return_value=CONSUMER), \
          patch.object(service, "get_api", return_value=api), \
          patch.object(service, "get_plan", return_value=plan), \
@@ -62,11 +62,11 @@ class CreateSubscriptionTest(unittest.TestCase):
         create.assert_not_called()
 
     def test_rejects_when_credits_are_not_enough(self):
-        (success, message), create = run(PROVIDER_API, PLAN, paid=None)
+        (success, message), create = run(PROVIDER_API, PLAN, paid=(None, 20))
         self.assertFalse(success)
         self.assertEqual(
             message,
-            "Créditos insuficientes: a assinatura custa 100 créditos e o saldo é 40.",
+            "Créditos insuficientes: a assinatura custa 100 créditos e o saldo é 20.",
         )
         create.assert_called_once()
 

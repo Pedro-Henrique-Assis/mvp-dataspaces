@@ -5,7 +5,6 @@ from flask import Blueprint, current_app, jsonify, request
 from app.auth import current_organization_id, login_required
 from app.repositories.apis import get_by_slug
 from app.repositories.credentials import get_for_organization
-from app.repositories.credits import get_balance
 from app.repositories.organizations import get_by_id as get_organization
 from app.repositories.usage import register_paid_request
 from app.repositories.subscriptions import find_active
@@ -45,19 +44,18 @@ def api_data(slug):
         "consumer": f"Requisição {level} · {api['name']}",
         "provider": f"Requisição de {organization['name']} · {api['name']}",
     }
-    if not register_paid_request(
+    paid, balance = register_paid_request(
         subscription, organization_id, api["provider_org_id"], level, request.path, price, descriptions
-    ):
-        return jsonify(
-            {"error": f"Créditos insuficientes. Custo: {price}, saldo: {organization['credit_balance']}."}
-        ), 402
+    )
+    if not paid:
+        return jsonify({"error": f"Créditos insuficientes. Custo: {price}, saldo: {balance}."}), 402
     return jsonify(
         {
             "api": api["name"],
             "provider": api["provider_name"],
             "access_level": level,
             "credits_charged": price,
-            "balance": get_balance(organization_id),
+            "balance": balance,
             "data": json.loads(api[f"{level}_response"]),
         }
     )

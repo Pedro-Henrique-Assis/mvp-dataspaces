@@ -46,6 +46,10 @@ class LogTest(unittest.TestCase):
         self.assertIn("INSERT INTO credit_transactions", sql)
         self.assertEqual(params, (7, -40, "request", "Requisição basic · API de entregas", 150))
 
+    def test_log_returns_balance_after(self):
+        cursor = FakeCursor(balance=15)
+        self.assertEqual(credits.log(cursor, 7, -5, "request", "Requisição"), 15)
+
 
 if __name__ == "__main__":
     unittest.main()
