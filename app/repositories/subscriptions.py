@@ -45,8 +45,10 @@ def create_paid(consumer_org_id, provider_org_id, api_id, plan, descriptions):
     try:
         price = plan["subscription_price_credits"]
         if not credits.debit(cursor, consumer_org_id, price):
+            cursor.execute("SELECT credit_balance FROM organizations WHERE id = %s", (consumer_org_id,))
+            balance = cursor.fetchone()[0]
             connection.rollback()
-            return None
+            return None, balance
         credits.credit(cursor, provider_org_id, price)
         cursor.execute(
             "INSERT INTO subscriptions (consumer_org_id, api_id, plan_id) "
@@ -54,10 +56,10 @@ def create_paid(consumer_org_id, provider_org_id, api_id, plan, descriptions):
             (consumer_org_id, api_id, plan["id"]),
         )
         subscription_id = cursor.lastrowid
-        credits.log(cursor, consumer_org_id, -price, "subscription", descriptions["consumer"])
+        balance = credits.log(cursor, consumer_org_id, -price, "subscription", descriptions["consumer"])
         credits.log(cursor, provider_org_id, price, "earning", descriptions["provider"])
         connection.commit()
-        return subscription_id
+        return subscription_id, balance
     except Exception:
         connection.rollback()
         raise

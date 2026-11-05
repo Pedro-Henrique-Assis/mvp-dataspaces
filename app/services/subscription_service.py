@@ -40,10 +40,10 @@ def create_subscription(consumer_id, api_id, plan_id, trusted_issuer):
         "consumer": f"Assinatura {plan['name']} · {api['name']}",
         "provider": f"Assinatura de {consumer['name']} · {api['name']}",
     }
-    subscription_id = create_paid(consumer_id, api["provider_org_id"], api_id, plan, descriptions)
+    subscription_id, balance = create_paid(consumer_id, api["provider_org_id"], api_id, plan, descriptions)
     if subscription_id is None:
         return False, (
             f"Créditos insuficientes: a assinatura custa {plan['subscription_price_credits']} "
-            f"créditos e o saldo é {consumer['credit_balance']}."
+            f"créditos e o saldo é {balance}."
         )
     return True, subscription_id
