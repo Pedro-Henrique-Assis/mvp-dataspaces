@@ -12,3 +12,4 @@ class Config:
     }
     TRUSTED_ISSUER_DID = "did:example:dataspace-authority"
     SESSION_COOKIE_SAMESITE = "Lax"
+    WELCOME_CREDITS = 300
