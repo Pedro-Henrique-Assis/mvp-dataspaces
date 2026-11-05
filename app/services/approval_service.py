@@ -7,7 +7,7 @@ def credential_expiration(today):
     return today + timedelta(days=365)
 
 
-def approve_organization(organization_id, trusted_issuer, today=None):
+def approve_organization(organization_id, trusted_issuer, welcome_credits, today=None):
     today = today or date.today()
     message = "Somente cadastros pendentes podem ser aprovados."
     organization = get_organization(organization_id)
@@ -22,9 +22,9 @@ def approve_organization(organization_id, trusted_issuer, today=None):
         "issued_at": today,
         "expires_at": credential_expiration(today),
     }
-    if not activate(organization_id, credential):
+    if not activate(organization_id, credential, welcome_credits):
         return False, message
-    return True, "Cadastro aprovado."
+    return True, f"Cadastro aprovado. Credencial emitida e {welcome_credits} créditos de boas-vindas concedidos."
 
 
 def reject_organization(organization_id, reason):

@@ -2,6 +2,7 @@
 {% block title %}Assinaturas{% endblock %}
 {% block content %}
 <h1>Contratar uma API</h1>
+<p>Saldo: {{ credit_balance }} créditos</p>
 {% if not can_subscribe %}
 <div class="alert alert-error" role="alert">{{ message }}</div>
 {% else %}
@@ -14,7 +15,7 @@
         <label for="plan-{{ api.id }}">Plano</label>
         <select id="plan-{{ api.id }}" name="plan_id" required>
             {% for plan in plans %}
-            <option value="{{ plan.id }}">{{ plan.name }} — US$ {{ '%.2f'|format(plan.subscription_price_usd) }}</option>
+            <option value="{{ plan.id }}">{{ plan.name }} — {{ plan.subscription_price_credits }} créditos + {{ plan.request_price_credits }} por requisição</option>
             {% endfor %}
         </select>
         <button class="button" type="submit">Contratar</button>

@@ -2,6 +2,7 @@
 {% block title %}Dashboard{% endblock %}
 {% block content %}
 <h1>Dashboard</h1>
+<p>Saldo: {{ credit_balance }} créditos</p>
 {% if credential %}
 <p>Credencial verificável emitida em {{ credential.issued_at }} e válida até {{ credential.expires_at }}.</p>
 {% endif %}
@@ -23,7 +24,7 @@
     <tr>
         <td>{{ subscription.api_name }}</td>
         <td>{{ subscription.plan_name }}</td>
-        <td>US$ {{ '%.2f'|format(subscription.request_price_usd) }}</td>
+        <td>{{ subscription.request_price_credits }} créditos</td>
     </tr>
     {% else %}
     <tr><td colspan="3">Nenhuma assinatura ativa.</td></tr>

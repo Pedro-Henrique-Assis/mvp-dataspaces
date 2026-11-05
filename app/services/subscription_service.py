@@ -2,7 +2,7 @@ from app.repositories.apis import get_by_id as get_api
 from app.repositories.credentials import get_for_organization
 from app.repositories.organizations import get_by_id as get_organization
 from app.repositories.plans import get_by_id as get_plan
-from app.repositories.subscriptions import create, find_active
+from app.repositories.subscriptions import create_paid, find_active
 from app.services.credential_service import validate_credential
 
 
@@ -36,5 +36,14 @@ def create_subscription(consumer_id, api_id, plan_id, trusted_issuer):
     )
     if not allowed:
         return False, message
-    subscription_id = create(consumer_id, api_id, plan_id)
+    descriptions = {
+        "consumer": f"Assinatura {plan['name']} · {api['name']}",
+        "provider": f"Assinatura de {consumer['name']} · {api['name']}",
+    }
+    subscription_id = create_paid(consumer_id, api["provider_org_id"], api_id, plan, descriptions)
+    if subscription_id is None:
+        return False, (
+            f"Créditos insuficientes: a assinatura custa {plan['subscription_price_credits']} "
+            f"créditos e o saldo é {consumer['credit_balance']}."
+        )
     return True, subscription_id

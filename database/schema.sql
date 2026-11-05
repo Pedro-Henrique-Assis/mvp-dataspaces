@@ -16,7 +16,20 @@ CREATE TABLE organizations (
     website VARCHAR(160),
     status VARCHAR(20) NOT NULL DEFAULT 'pending',
     rejection_reason VARCHAR(255),
-    created_at DATETIME NOT NULL DEFAULT CURRENT_TIMESTAMP
+    credit_balance INT NOT NULL DEFAULT 0,
+    created_at DATETIME NOT NULL DEFAULT CURRENT_TIMESTAMP,
+    CHECK (credit_balance >= 0)
+);
+
+CREATE TABLE credit_transactions (
+    id INT AUTO_INCREMENT PRIMARY KEY,
+    organization_id INT NOT NULL,
+    amount INT NOT NULL,
+    type VARCHAR(20) NOT NULL,
+    description VARCHAR(255) NOT NULL,
+    balance_after INT NOT NULL,
+    created_at DATETIME NOT NULL DEFAULT CURRENT_TIMESTAMP,
+    FOREIGN KEY (organization_id) REFERENCES organizations(id)
 );
 
 CREATE TABLE admins (
@@ -59,8 +72,8 @@ CREATE TABLE plans (
     id INT AUTO_INCREMENT PRIMARY KEY,
     code VARCHAR(20) NOT NULL UNIQUE,
     name VARCHAR(80) NOT NULL,
-    subscription_price_usd DECIMAL(10, 2) NOT NULL,
-    request_price_usd DECIMAL(10, 2) NOT NULL,
+    subscription_price_credits INT NOT NULL,
+    request_price_credits INT NOT NULL,
     max_access_level VARCHAR(20) NOT NULL
 );
 
@@ -82,7 +95,7 @@ CREATE TABLE api_requests (
     subscription_id INT NOT NULL,
     access_level VARCHAR(20) NOT NULL,
     endpoint VARCHAR(120) NOT NULL,
-    amount_usd DECIMAL(10, 2) NOT NULL,
+    credits INT NOT NULL,
     success BOOLEAN NOT NULL,
     error_message VARCHAR(255),
     requested_at DATETIME NOT NULL DEFAULT CURRENT_TIMESTAMP,

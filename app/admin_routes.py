@@ -40,7 +40,11 @@ def organizations():
 @admin_blueprint.post("/organizations/<int:organization_id>/approval")
 @admin_required
 def approve(organization_id):
-    ok, message = approve_organization(organization_id, current_app.config["TRUSTED_ISSUER_DID"])
+    ok, message = approve_organization(
+        organization_id,
+        current_app.config["TRUSTED_ISSUER_DID"],
+        current_app.config["WELCOME_CREDITS"],
+    )
     flash(message, "success" if ok else "error")
     return redirect(url_for("admin.organizations"))
 

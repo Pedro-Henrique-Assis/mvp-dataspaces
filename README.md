@@ -4,7 +4,7 @@
 
 MVP acadêmico para simular a monetização de dados de logística e transporte em um Data Space.
 
-O sistema permite que organizações se cadastrem com e-mail e senha, escolhendo ser consumidoras, fornecedoras ou ambos. Um administrador aprova ou rejeita o cadastro e, na aprovação, a organização recebe um DID e uma credencial verificável (VC) válida por um ano. Fornecedoras pré-cadastram uma API com o JSON de exemplo de cada plano e a política de uso. As APIs são servidas por uma única rota REST, com planos simples e premium e cobrança por assinatura e por requisição.
+O sistema permite que organizações se cadastrem com e-mail e senha, escolhendo ser consumidoras, fornecedoras ou ambos. Um administrador aprova ou rejeita o cadastro e, na aprovação, a organização recebe um DID e uma credencial verificável (VC) válida por um ano. Fornecedoras pré-cadastram uma API com o JSON de exemplo de cada plano e a política de uso. As APIs são servidas por uma única rota REST, com planos simples e premium. A cobrança usa um saldo pré-pago de créditos: assinar um plano e fazer requisições debita créditos do consumidor e os transfere para a fornecedora. O saldo é recarregado por um PIX simulado, sem pagamento real.
 
 ## Status
 
@@ -46,17 +46,40 @@ Para repetir o teste do zero, apague o banco com `DROP DATABASE dataspaces_mvp;`
 
 ### Contas de demonstração
 
-| Conta | E-mail | Senha | Observação |
-|---|---|---|---|
-| Administrador | `admin@dataspace.local` | `admin123` | Aprova e rejeita cadastros |
-| TransLog Brasil | `contato@translog.com.br` | `translog123` | Consumidora e fornecedora, fornece a API de entregas |
-| CargaCerta Transportes | `contato@cargacerta.com.br` | `cargacerta123` | Consumidora e fornecedora, fornece a API de veículos |
+| Conta | E-mail | Senha | Saldo inicial | Observação |
+|---|---|---|---|---|
+| Administrador | `admin@dataspace.local` | `admin123` | não tem | Aprova e rejeita cadastros |
+| TransLog Brasil | `contato@translog.com.br` | `translog123` | 1000 créditos | Consumidora e fornecedora, fornece a API de entregas |
+| CargaCerta Transportes | `contato@cargacerta.com.br` | `cargacerta123` | 120 créditos | Consumidora e fornecedora, fornece a API de veículos |
 
 Novas organizações se cadastram em `/organizations/new` (botão **Registre-se** na tela de login) e ficam pendentes até o administrador aprovar em `/admin/organizations`.
 
 ### Consumo das APIs
 
 Depois de assinar um plano, a API é consultada em `GET /api/v1/apis/<slug>/data?level=basic|premium`, com a sessão da organização consumidora. Exemplo: `/api/v1/apis/entregas/data?level=premium`.
+
+A resposta de sucesso informa o que foi cobrado e o saldo restante:
+
+```json
+{"api": "API de entregas", "provider": "TransLog Brasil", "access_level": "basic", "credits_charged": 5, "balance": 15, "data": [...]}
+```
+
+Sem saldo suficiente, a API responde `402` com `{"error": "Créditos insuficientes. Custo: 5, saldo: 0."}` e não entrega dados.
+
+### Créditos e recarga
+
+- Os preços são globais por plano, em créditos inteiros:
+
+  | Plano | Assinatura (uma vez) | Por requisição | Nível de acesso |
+  |---|---|---|---|
+  | Simples | 100 créditos | 5 créditos | básico |
+  | Premium | 250 créditos | 2 créditos | básico e premium |
+
+- A fornecedora recebe 100% da taxa de assinatura e de cada requisição. Assinaturas e requisições recusadas por falta de saldo não movimentam créditos.
+- O saldo aparece no menu. A página `/credits` mostra o saldo, os totais gasto e recebido, os pacotes de recarga e o extrato de movimentações.
+- Organizações novas recebem 300 créditos de boas-vindas quando o administrador aprova o cadastro.
+- A recarga é um PIX simulado, com pacotes fixos de 500, 1000 e 2500 créditos. Cada crédito vale US$ 0,10, valor usado apenas para exibir o preço do pacote. A tela de pagamento mostra um código fictício e, ao confirmar, os créditos são adicionados. Nenhum valor real é cobrado.
+- Débito, crédito e extrato são gravados na mesma transação, então o saldo de cada organização sempre é igual à soma do extrato.
 
 ## Como executar localmente
 
@@ -101,7 +124,7 @@ python run.py
 
 Se o comando `python` não estiver disponível, substitua-o pelo caminho do interpretador Python instalado, por exemplo `C:\python314\python.exe`.
 
-Com o servidor ativo, abra `http://127.0.0.1:5000` no navegador. Entre com uma das contas de demonstração, crie uma assinatura e então consulte as APIs. A página `/usage` mostra o resumo de consumo e cobrança.
+Com o servidor ativo, abra `http://127.0.0.1:5000` no navegador. Entre com uma das contas de demonstração, crie uma assinatura e então consulte as APIs. A página `/usage` mostra o resumo de consumo e cobrança em créditos, e `/credits` mostra o saldo e o extrato.
 
 Para encerrar o servidor, pressione `Ctrl+C` no terminal.
 

@@ -12,13 +12,16 @@ rectangle "Data Space MVP" {
   usecase "Entrar com e-mail e senha" as Login
   usecase "Aprovar ou rejeitar cadastro" as Approve
   usecase "Emitir DID e VC de um ano" as Issue
+  usecase "Conceder créditos de boas-vindas" as Welcome
   usecase "Validar DID e VC" as Validate
   usecase "Contratar plano" as Subscribe
   usecase "Consultar dados básicos" as Basic
   usecase "Consultar dados premium" as Premium
   usecase "Registrar requisição" as LogRequest
-  usecase "Calcular cobrança" as Bill
-  usecase "Consultar consumo e cobrança" as Usage
+  usecase "Debitar créditos e repassar à fornecedora" as Bill
+  usecase "Consultar consumo" as Usage
+  usecase "Consultar saldo e extrato" as Statement
+  usecase "Recarregar créditos via PIX simulado" as TopUp
 }
 
 Visitor --> Catalog
@@ -29,14 +32,18 @@ Org --> Subscribe
 Org --> Basic
 Org --> Premium
 Org --> Usage
+Org --> Statement
+Org --> TopUp
 Admin --> Login
 Admin --> Approve
 Authority --> Validate
 
 Register .> RegisterApi : <<extend>>
 Approve .> Issue : <<include>>
+Approve .> Welcome : <<include>>
 Login .> Validate : <<include>>
 Subscribe .> Validate : <<include>>
+Subscribe .> Bill : <<include>>
 Basic .> Validate : <<include>>
 Premium .> Validate : <<include>>
 Basic .> LogRequest : <<include>>

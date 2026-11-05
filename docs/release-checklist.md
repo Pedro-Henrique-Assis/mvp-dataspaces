@@ -10,8 +10,13 @@
 - [ ] Uma fornecedora aprovada aparece no catálogo e sua API pode ser assinada e consumida.
 - [ ] Plano simples bloqueia dados premium.
 - [ ] Plano premium permite dados básicos e premium.
-- [ ] US$ 0,50 e US$ 0,20 são registrados corretamente.
-- [ ] Assinatura, consumo e total aparecem no resumo.
+- [ ] Assinar debita a taxa do plano do consumidor e credita a fornecedora (100 e 250 créditos).
+- [ ] Cada requisição debita 5 (simples) ou 2 (premium) créditos e credita a fornecedora.
+- [ ] Sem saldo, a assinatura é recusada e a API responde 402 sem entregar dados.
+- [ ] O seed começa com TransLog 1000 e CargaCerta 120 créditos, e uma organização nova aprovada recebe 300.
+- [ ] A recarga por PIX simulado credita um dos pacotes (500, 1000 ou 2500) e recusa pacote adulterado.
+- [ ] Para toda organização, o saldo é igual à soma do extrato.
+- [ ] Assinatura, consumo e total aparecem no resumo, em créditos.
 - [ ] Testes automatizados passam.
 - [ ] Diagramas UML representam o sistema implementado.
 - [ ] O roteiro de demonstração foi executado do início ao fim.

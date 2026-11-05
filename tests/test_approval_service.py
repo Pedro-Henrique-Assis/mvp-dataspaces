@@ -11,7 +11,7 @@ PENDING = {"id": 5, "did": "did:example:123", "role": "provider", "status": "pen
 def approve(organization, activated=True):
     with patch.object(service, "get_organization", return_value=organization), \
             patch.object(service, "activate", return_value=activated) as activate:
-        result = service.approve_organization(5, ISSUER, today=date(2026, 11, 4))
+        result = service.approve_organization(5, ISSUER, 300, today=date(2026, 11, 4))
     return result, activate
 
 
@@ -22,12 +22,17 @@ class ApproveOrganizationTest(unittest.TestCase):
     def test_approves_pending_organization_with_credential(self):
         (ok, _), activate = approve(PENDING)
         self.assertTrue(ok)
-        org_id, credential = activate.call_args.args
+        org_id, credential, _ = activate.call_args.args
         self.assertEqual(org_id, 5)
         self.assertEqual(credential["issuer_did"], ISSUER)
         self.assertEqual(credential["subject_did"], "did:example:123")
         self.assertEqual(credential["issued_at"], date(2026, 11, 4))
         self.assertEqual(credential["expires_at"], date(2027, 11, 4))
+
+    def test_grants_welcome_credits_on_approval(self):
+        (ok, message), activate = approve(PENDING)
+        self.assertEqual(activate.call_args.args[2], 300)
+        self.assertEqual(message, "Cadastro aprovado. Credencial emitida e 300 créditos de boas-vindas concedidos.")
 
     def test_roles_follow_organization_role(self):
         expected = {"consumer": (False, True), "provider": (True, False), "both": (True, True)}

@@ -2,7 +2,7 @@ import unittest
 from datetime import date
 from unittest.mock import patch
 
-from app import create_app, subscription_routes, usage_routes
+from app import create_app, credit_routes, subscription_routes, usage_routes
 
 CREDENTIAL = {
     "status": "active",
@@ -17,7 +17,9 @@ APIS = [
     {"id": 1, "name": "API de entregas", "description": "Entregas.", "provider_name": "TransLog Brasil"},
     {"id": 3, "name": "API de rotas", "description": "Rotas.", "provider_name": "Rota Certa"},
 ]
-PLANS = [{"id": 1, "name": "Plano simples", "subscription_price_usd": 10}]
+PLANS = [
+    {"id": 1, "name": "Plano simples", "subscription_price_credits": 100, "request_price_credits": 5}
+]
 
 
 class SubscriptionRoutesTest(unittest.TestCase):
@@ -25,6 +27,9 @@ class SubscriptionRoutesTest(unittest.TestCase):
         self.client = create_app({"TESTING": True, "SECRET_KEY": "test"}).test_client()
         with self.client.session_transaction() as session:
             session["organization_id"] = 2
+        balance = patch.object(credit_routes, "get_balance", return_value=120)
+        balance.start()
+        self.addCleanup(balance.stop)
 
     def get(self, url="/subscriptions", credential=CREDENTIAL):
         with patch.object(subscription_routes, "list_available_for", return_value=APIS) as listing, \
@@ -45,6 +50,10 @@ class SubscriptionRoutesTest(unittest.TestCase):
         html = self.get("/subscriptions?api_id=3").get_data(as_text=True)
         self.assertLess(html.index("API de rotas"), html.index("API de entregas"))
         self.assertIn("Selecionada", html)
+
+    def test_plan_option_shows_credit_prices(self):
+        html = self.get().get_data(as_text=True)
+        self.assertIn("Plano simples — 100 créditos + 5 por requisição", html)
 
     def test_without_api_id_nothing_is_marked(self):
         self.assertNotIn("Selecionada", self.get().get_data(as_text=True))

@@ -3,7 +3,7 @@ from datetime import date
 
 from unittest.mock import patch
 
-from app import create_app, organization_routes
+from app import create_app, credit_routes, organization_routes
 
 
 class RegistrationFormTest(unittest.TestCase):
@@ -124,8 +124,8 @@ API = {
     "policy_notes": "Sem repasse a terceiros.",
 }
 PLANS = [
-    {"id": 1, "name": "Plano simples", "subscription_price_usd": 10, "request_price_usd": 0.5, "max_access_level": "basic"},
-    {"id": 2, "name": "Plano premium", "subscription_price_usd": 25, "request_price_usd": 0.2, "max_access_level": "premium"},
+    {"id": 1, "name": "Plano simples", "subscription_price_credits": 100, "request_price_credits": 5, "max_access_level": "basic"},
+    {"id": 2, "name": "Plano premium", "subscription_price_credits": 250, "request_price_credits": 2, "max_access_level": "premium"},
 ]
 
 
@@ -137,7 +137,7 @@ class OrganizationDetailTest(unittest.TestCase):
         if logged_in:
             with self.client.session_transaction() as session:
                 session["organization_id"] = logged_in
-        with patch.object(organization_routes, "get_organization", return_value=organization),                 patch.object(organization_routes, "get_credential", return_value=CREDENTIAL),                 patch.object(organization_routes, "list_apis_for_provider", return_value=[API]),                 patch.object(organization_routes, "list_plans", return_value=PLANS):
+        with patch.object(organization_routes, "get_organization", return_value=organization),                 patch.object(organization_routes, "get_credential", return_value=CREDENTIAL),                 patch.object(organization_routes, "list_apis_for_provider", return_value=[API]),                 patch.object(organization_routes, "list_plans", return_value=PLANS),                 patch.object(credit_routes, "get_balance", return_value=120):
             return self.client.get("/organizations/1")
 
     def test_shows_organization_data_and_credential_validity(self):
@@ -156,6 +156,12 @@ class OrganizationDetailTest(unittest.TestCase):
                      "90 dias", "Sem repasse a terceiros.", "tracking_code", "status", "route_distance_km"]:
             self.assertIn(text, html)
         self.assertNotIn("SEGREDO-001", html)
+
+    def test_plan_prices_are_shown_in_credits(self):
+        html = self.get().get_data(as_text=True)
+        for text in ["100 créditos", "250 créditos", "5 créditos", "2 créditos"]:
+            self.assertIn(text, html)
+        self.assertNotIn("US$", html)
 
     def test_subscribe_button_depends_on_login(self):
         self.assertNotIn("/subscriptions?api_id=10", self.get().get_data(as_text=True))

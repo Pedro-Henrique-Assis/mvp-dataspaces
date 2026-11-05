@@ -1,4 +1,5 @@
 from app.database import get_connection
+from app.repositories import credits
 
 
 def list_catalog():
@@ -111,7 +112,7 @@ def list_by_status(status):
         connection.close()
 
 
-def activate(organization_id, credential):
+def activate(organization_id, credential, welcome_credits):
     connection = get_connection()
     cursor = connection.cursor()
     try:
@@ -130,6 +131,8 @@ def activate(organization_id, credential):
             "%(role_consumer)s, %(issued_at)s, %(expires_at)s)",
             dict(credential, organization_id=organization_id),
         )
+        credits.credit(cursor, organization_id, welcome_credits)
+        credits.log(cursor, organization_id, welcome_credits, "bonus", "Créditos de boas-vindas")
         connection.commit()
         return True
     except Exception:
