@@ -49,6 +49,7 @@ class ApiRoutesTest(unittest.TestCase):
             patch.object(api_routes, "get_for_organization", return_value=credential),
             patch.object(api_routes, "get_organization", return_value=ORGANIZATION),
             patch.object(api_routes, "find_active", return_value=subscription),
+            patch.object(api_routes, "get_balance", return_value=15),
             patch.object(api_routes, "register_paid_request", return_value=paid),
         )
         mocks = [p.start() for p in patchers]
@@ -69,6 +70,8 @@ class ApiRoutesTest(unittest.TestCase):
                 "api": "API de veículos",
                 "provider": "CargaCerta Transportes",
                 "access_level": "basic",
+                "credits_charged": 5,
+                "balance": 15,
                 "data": [{"vehicle_code": "VEI-001"}],
             },
         )
@@ -101,6 +104,7 @@ class ApiRoutesTest(unittest.TestCase):
         response, _ = self.request(URL + "?level=premium", subscription=PREMIUM)
         self.assertEqual(response.status_code, 200)
         self.assertEqual(response.json["data"][0]["capacity_kg"], 12000)
+        self.assertEqual(response.json["credits_charged"], 5)
 
     def test_premium_blocked_without_charge(self):
         response, register = self.request(URL + "?level=premium")
