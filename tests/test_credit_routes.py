@@ -204,8 +204,11 @@ class TopUpTest(unittest.TestCase):
 
     def show(self, charge):
         self.login()
-        with patch.object(credit_routes, "expire_overdue"),                 patch.object(credit_routes, "get_by_code", return_value=charge):
-            return self.client.get("/credits/top-ups/ABC")
+        with patch.object(credit_routes, "expire_overdue"), \
+                patch.object(credit_routes, "get_by_code", return_value=charge) as get_by_code:
+            response = self.client.get("/credits/top-ups/ABC")
+        get_by_code.assert_called_once_with(2, "ABC")
+        return response
 
     def test_post_top_up_redirects_to_charge(self):
         self.login()
@@ -268,7 +271,9 @@ class TopUpTest(unittest.TestCase):
     def test_confirm_charge_of_other_organization_is_404(self):
         with self.client.session_transaction() as session:
             session["organization_id"] = 3
-        with patch.object(credit_service, "expire_overdue"),                 patch.object(credit_service, "get_by_code", return_value=None) as get_by_code,                 patch.object(credit_service, "confirm", return_value="not_found") as confirm:
+        with patch.object(credit_service, "expire_overdue"), \
+                patch.object(credit_service, "get_by_code", return_value=None) as get_by_code, \
+                patch.object(credit_service, "confirm", return_value="not_found") as confirm:
             response = self.client.post("/credits/top-ups/ABC/confirmation")
         self.assertEqual(response.status_code, 404)
         get_by_code.assert_called_once_with(3, "ABC")
@@ -276,7 +281,8 @@ class TopUpTest(unittest.TestCase):
 
     def test_old_new_route_is_gone(self):
         self.login()
-        with patch.object(credit_routes, "expire_overdue"),                 patch.object(credit_routes, "get_by_code", return_value=None):
+        with patch.object(credit_routes, "expire_overdue"), \
+                patch.object(credit_routes, "get_by_code", return_value=None):
             response = self.client.get("/credits/top-ups/new?package=500")
         self.assertEqual(response.status_code, 404)
 

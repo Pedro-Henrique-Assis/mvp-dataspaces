@@ -29,21 +29,6 @@ def log(cursor, organization_id, amount, type, description):
     return balance
 
 
-def add(organization_id, amount, type, description):
-    connection = get_connection()
-    cursor = connection.cursor()
-    try:
-        credit(cursor, organization_id, amount)
-        log(cursor, organization_id, amount, type, description)
-        connection.commit()
-    except Exception:
-        connection.rollback()
-        raise
-    finally:
-        cursor.close()
-        connection.close()
-
-
 def get_balance(organization_id):
     connection = get_connection()
     cursor = connection.cursor()

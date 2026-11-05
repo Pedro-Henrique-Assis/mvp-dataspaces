@@ -82,7 +82,7 @@ Sem saldo suficiente, a API responde `402` com `{"error": "Créditos insuficient
 - Fluxo da cobrança:
   1. Ao escolher um pacote em `/credits`, o sistema grava uma cobrança PIX (tabela `pix_charges`) com um código fictício e abre a tela de pagamento. A cobrança vale 15 minutos.
   2. Escolher o mesmo pacote de novo, ou recarregar a tela, reaproveita a cobrança pendente e ainda válida, com o mesmo código.
-  3. Ao confirmar o pagamento simulado, os créditos são adicionados uma única vez. Confirmar de novo (duplo clique, botão voltar do navegador) mostra "Esta cobrança já foi confirmada" e não credita outra vez.
+  3. Ao confirmar o pagamento simulado, os créditos são adicionados uma única vez. Confirmar de novo (duplo clique, botão voltar do navegador ou a mesma cobrança aberta em duas abas) mostra "Esta cobrança já foi confirmada" e não credita outra vez.
   4. Depois de 15 minutos a cobrança passa para `expired`: a confirmação é recusada com "Esta cobrança expirou. Gere uma nova." e a tela oferece o botão para gerar uma nova cobrança.
 - O extrato é paginado, com 20 movimentações por página, da mais recente para a mais antiga. A navegação é feita por `/credits?page=N`. Um `page` inválido (`abc`, `0`, `-1`) responde 400 e uma página além da última responde 404, ambos com a mensagem "A página pesquisada não existe.".
 - O campo `balance` da resposta da API é o saldo imediatamente após a cobrança daquela requisição, igual ao `balance_after` da linha correspondente no extrato.

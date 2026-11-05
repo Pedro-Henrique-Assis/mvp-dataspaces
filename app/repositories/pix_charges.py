@@ -20,7 +20,7 @@ def expire_overdue(organization_id):
         connection.close()
 
 
-def find_open(organization_id, credits):
+def find_open(organization_id, package):
     connection = get_connection()
     cursor = connection.cursor()
     try:
@@ -29,7 +29,7 @@ def find_open(organization_id, credits):
             "WHERE organization_id = %s AND credits = %s "
             "AND status = 'pending' AND expires_at >= NOW() "
             "ORDER BY id DESC LIMIT 1",
-            (organization_id, credits),
+            (organization_id, package),
         )
         row = cursor.fetchone()
         return row[0] if row else None
@@ -38,14 +38,14 @@ def find_open(organization_id, credits):
         connection.close()
 
 
-def create(organization_id, code, credits, amount_usd, minutes):
+def create(organization_id, code, package, amount_usd, minutes):
     connection = get_connection()
     cursor = connection.cursor()
     try:
         cursor.execute(
             "INSERT INTO pix_charges (organization_id, code, credits, amount_usd, expires_at) "
             "VALUES (%s, %s, %s, %s, DATE_ADD(NOW(), INTERVAL %s MINUTE))",
-            (organization_id, code, credits, amount_usd, minutes),
+            (organization_id, code, package, amount_usd, minutes),
         )
         connection.commit()
     except Exception:

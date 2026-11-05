@@ -15,6 +15,10 @@
 - [ ] Sem saldo, a assinatura é recusada e a API responde 402 sem entregar dados.
 - [ ] O seed começa com TransLog 1000 e CargaCerta 120 créditos, e uma organização nova aprovada recebe 300.
 - [ ] A recarga por PIX simulado credita um dos pacotes (500, 1000 ou 2500) e recusa pacote adulterado.
+- [ ] Cada recarga é confirmada uma única vez, inclusive com duplo clique.
+- [ ] A cobrança PIX expira em 15 minutos e não credita depois disso.
+- [ ] O extrato é paginado (20 por página) e responde 400 ou 404 para página inválida.
+- [ ] O `balance` da resposta da API é igual ao `balance_after` do extrato.
 - [ ] Para toda organização, o saldo é igual à soma do extrato.
 - [ ] Assinatura, consumo e total aparecem no resumo, em créditos.
 - [ ] Testes automatizados passam.

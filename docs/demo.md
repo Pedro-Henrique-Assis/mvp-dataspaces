@@ -24,7 +24,7 @@ Preços: plano simples = 100 créditos de assinatura + 5 por requisição; plano
 6. Abrir **Créditos**. Mostrar o saldo, os totais gasto e recebido e o extrato com a assinatura e as requisições.
 7. Clicar em **Recarregar** no pacote de 500 créditos. A cobrança é gerada: mostrar o aviso de simulação, o código fictício e a validade de 15 minutos. Recarregar a página (F5) e ver o mesmo código.
 8. Clicar em **Confirmar pagamento simulado**. O saldo passa a 500 e a consulta volta a funcionar.
-9. Voltar pelo botão do navegador e confirmar de novo: aparece "Esta cobrança já foi confirmada. Os créditos foram adicionados uma única vez." e o saldo continua 500.
+9. Confirmar de novo: voltar pelo botão do navegador ou, de forma mais confiável, abrir a mesma cobrança em duas abas e confirmar nas duas. Na segunda aparece "Esta cobrança já foi confirmada. Os créditos foram adicionados uma única vez." e o saldo continua 500.
 10. Com 500 créditos, contratar o plano premium (250) da API da fornecedora recém-aprovada e consultar básico e premium, mostrando o custo de 2 créditos por requisição.
 11. Comparar o `balance` da resposta da API com o `balance_after` da linha de requisição mais recente no extrato em **Créditos**: são o mesmo valor.
 12. Abrir **Consumo** e explicar assinatura, requisições e total em créditos.
