@@ -7,7 +7,7 @@ def find_active(consumer_org_id, api_id):
     try:
         cursor.execute(
             "SELECT s.*, p.code AS plan_code, p.name AS plan_name, "
-            "p.subscription_price_usd, p.request_price_usd, p.max_access_level "
+            "p.subscription_price_credits, p.request_price_credits, p.max_access_level "
             "FROM subscriptions s JOIN plans p ON p.id = s.plan_id "
             "WHERE s.consumer_org_id = %s AND s.api_id = %s "
             "AND s.status = 'active'",
@@ -25,7 +25,7 @@ def list_for_consumer(consumer_org_id):
     try:
         cursor.execute(
             "SELECT s.*, a.name AS api_name, p.name AS plan_name, "
-            "p.subscription_price_usd, p.request_price_usd "
+            "p.subscription_price_credits, p.request_price_credits "
             "FROM subscriptions s JOIN apis a ON a.id = s.api_id "
             "JOIN plans p ON p.id = s.plan_id "
             "WHERE s.consumer_org_id = %s AND s.status = 'active' "

@@ -41,6 +41,6 @@ VALUES
  'Planejamento de transporte com base na disponibilidade da frota.', FALSE, 60,
  'Uso restrito ao planejamento interno da organização consumidora.');
 
-INSERT INTO plans (id, code, name, subscription_price_usd, request_price_usd, max_access_level) VALUES
-(1, 'simple', 'Plano simples', 10.00, 0.50, 'basic'),
-(2, 'premium', 'Plano premium', 25.00, 0.20, 'premium');
+INSERT INTO plans (id, code, name, subscription_price_credits, request_price_credits, max_access_level) VALUES
+(1, 'simple', 'Plano simples', 100, 5, 'basic'),
+(2, 'premium', 'Plano premium', 250, 2, 'premium');

@@ -23,7 +23,7 @@
     <tr>
         <td>{{ subscription.api_name }}</td>
         <td>{{ subscription.plan_name }}</td>
-        <td>US$ {{ '%.2f'|format(subscription.request_price_usd) }}</td>
+        <td>{{ subscription.request_price_credits }} créditos</td>
     </tr>
     {% else %}
     <tr><td colspan="3">Nenhuma assinatura ativa.</td></tr>

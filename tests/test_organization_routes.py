@@ -124,8 +124,8 @@ API = {
     "policy_notes": "Sem repasse a terceiros.",
 }
 PLANS = [
-    {"id": 1, "name": "Plano simples", "subscription_price_usd": 10, "request_price_usd": 0.5, "max_access_level": "basic"},
-    {"id": 2, "name": "Plano premium", "subscription_price_usd": 25, "request_price_usd": 0.2, "max_access_level": "premium"},
+    {"id": 1, "name": "Plano simples", "subscription_price_credits": 100, "request_price_credits": 5, "max_access_level": "basic"},
+    {"id": 2, "name": "Plano premium", "subscription_price_credits": 250, "request_price_credits": 2, "max_access_level": "premium"},
 ]
 
 
@@ -156,6 +156,12 @@ class OrganizationDetailTest(unittest.TestCase):
                      "90 dias", "Sem repasse a terceiros.", "tracking_code", "status", "route_distance_km"]:
             self.assertIn(text, html)
         self.assertNotIn("SEGREDO-001", html)
+
+    def test_plan_prices_are_shown_in_credits(self):
+        html = self.get().get_data(as_text=True)
+        for text in ["100 créditos", "250 créditos", "5 créditos", "2 créditos"]:
+            self.assertIn(text, html)
+        self.assertNotIn("US$", html)
 
     def test_subscribe_button_depends_on_login(self):
         self.assertNotIn("/subscriptions?api_id=10", self.get().get_data(as_text=True))

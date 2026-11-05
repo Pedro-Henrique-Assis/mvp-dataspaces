@@ -26,8 +26,8 @@ SIMPLE = {
     "id": 5,
     "status": "active",
     "max_access_level": "basic",
-    "request_price_usd": "0.50",
-    "subscription_price_usd": "10.00",
+    "request_price_credits": 5,
+    "subscription_price_credits": 100,
 }
 PREMIUM = dict(SIMPLE, max_access_level="premium")
 URL = "/api/v1/apis/veiculos/data"

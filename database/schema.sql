@@ -72,8 +72,8 @@ CREATE TABLE plans (
     id INT AUTO_INCREMENT PRIMARY KEY,
     code VARCHAR(20) NOT NULL UNIQUE,
     name VARCHAR(80) NOT NULL,
-    subscription_price_usd DECIMAL(10, 2) NOT NULL,
-    request_price_usd DECIMAL(10, 2) NOT NULL,
+    subscription_price_credits INT NOT NULL,
+    request_price_credits INT NOT NULL,
     max_access_level VARCHAR(20) NOT NULL
 );
 
@@ -95,7 +95,7 @@ CREATE TABLE api_requests (
     subscription_id INT NOT NULL,
     access_level VARCHAR(20) NOT NULL,
     endpoint VARCHAR(120) NOT NULL,
-    amount_usd DECIMAL(10, 2) NOT NULL,
+    credits INT NOT NULL,
     success BOOLEAN NOT NULL,
     error_message VARCHAR(255),
     requested_at DATETIME NOT NULL DEFAULT CURRENT_TIMESTAMP,

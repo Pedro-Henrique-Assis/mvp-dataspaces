@@ -5,7 +5,7 @@ def list_all():
     connection = get_connection()
     cursor = connection.cursor(dictionary=True)
     try:
-        cursor.execute("SELECT * FROM plans ORDER BY subscription_price_usd")
+        cursor.execute("SELECT * FROM plans ORDER BY subscription_price_credits")
         return cursor.fetchall()
     finally:
         cursor.close()

@@ -38,8 +38,8 @@ def api_data(slug):
     allowed, message = authorize_request(subscription, level)
     if not allowed:
         return jsonify({"error": message}), 403
-    amount = calculate_request_amount(subscription)
-    register_request(subscription["id"], level, request.path, amount)
+    credits = calculate_request_amount(subscription)
+    register_request(subscription["id"], level, request.path, credits)
     return jsonify(
         {
             "api": api["name"],
