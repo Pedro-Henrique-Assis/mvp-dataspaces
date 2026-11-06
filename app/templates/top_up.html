@@ -1,33 +1,42 @@
 {% extends "base.html" %}
 {% block title %}Recarga via PIX{% endblock %}
 {% block content %}
-<h1>Recarga via PIX</h1>
-<section class="card">
+<header class="page-head">
+    <h1 class="page-title">Recarga via PIX</h1>
+    <p>Pacote de {{ charge.credits }} créditos.</p>
+</header>
+<section class="panel panel-narrow">
     {% if charge.status == 'pending' %}
-    <div class="alert alert-error" role="alert">Ambiente de simulação. Nenhum valor real é cobrado.</div>
-    <p>Pacote: {{ charge.credits }} créditos</p>
-    <p>Valor: US$ {{ '%.2f'|format(charge.amount_usd) }}</p>
-    <p>Válida até {{ charge.expires_at.strftime('%H:%M') }}</p>
-    <div class="card">QR Code indisponível na simulação</div>
-    <p>Código PIX copia e cola:</p>
-    <p><code>{{ charge.code }}</code></p>
+    <div class="alert alert-info" role="note">Ambiente de simulação. Nenhum valor real é cobrado.</div>
+    <div class="ticket">
+        <div class="qr-placeholder label">QR Code indisponível na simulação</div>
+        <div>
+            <p class="label muted">Valor</p>
+            <p class="amount-big">US$ {{ '%.2f'|format(charge.amount_usd) }}</p>
+            <p>Válida até {{ charge.expires_at.strftime('%H:%M') }}</p>
+            <p class="label muted">Código PIX copia e cola</p>
+            <code class="pix-code">{{ charge.code }}</code>
+        </div>
+    </div>
     <form method="post" action="{{ url_for('credits.confirm_payment', code=charge.code) }}">
-        <div class="card-actions">
+        <div class="actions form-footer">
             <button class="button" type="submit">Confirmar pagamento simulado</button>
             <a class="button button-secondary" href="{{ url_for('credits.index') }}">Cancelar</a>
         </div>
     </form>
     {% elif charge.status == 'paid' %}
-    <p>Pacote: {{ charge.credits }} créditos</p>
-    <p>Valor: US$ {{ '%.2f'|format(charge.amount_usd) }}</p>
-    <p>Pagamento confirmado em {{ charge.paid_at.strftime('%d/%m/%Y %H:%M') }}.</p>
-    <a class="button button-secondary" href="{{ url_for('credits.index') }}">Voltar aos créditos</a>
+    <div class="alert alert-success" role="status">Pagamento confirmado em {{ charge.paid_at.strftime('%d/%m/%Y %H:%M') }}.</div>
+    <p class="label muted">Valor</p>
+    <p class="amount-big">US$ {{ '%.2f'|format(charge.amount_usd) }}</p>
+    <div class="actions form-footer">
+        <a class="button button-secondary" href="{{ url_for('credits.index') }}">Voltar aos créditos</a>
+    </div>
     {% else %}
     <div class="alert alert-error" role="alert">Cobrança expirada.</div>
-    <p>Pacote: {{ charge.credits }} créditos</p>
+    <p>A cobrança passou do prazo de 15 minutos e não pode mais ser paga. Gere uma nova para o mesmo pacote.</p>
     <form method="post" action="{{ url_for('credits.create_top_up') }}">
         <input type="hidden" name="package" value="{{ charge.credits }}">
-        <div class="card-actions">
+        <div class="actions form-footer">
             <button class="button" type="submit">Gerar nova cobrança</button>
             <a class="button button-secondary" href="{{ url_for('credits.index') }}">Cancelar</a>
         </div>

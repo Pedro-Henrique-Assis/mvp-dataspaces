@@ -95,8 +95,8 @@ class CreditsPageTest(unittest.TestCase):
 
     def test_shows_balance_and_totals(self):
         html = self.page()
-        for text in ["Saldo atual: 120 créditos", "Total gasto: 105 créditos", "Total recebido: 5 créditos"]:
-            self.assertIn(text, html)
+        for label, value in [("Saldo atual", 120), ("Total gasto", 105), ("Total recebido", 5)]:
+            self.assertIn(f"{label}</dt><dd>{value} <small>créditos</small>", html)
 
     def test_packages_are_post_forms(self):
         html = self.page()

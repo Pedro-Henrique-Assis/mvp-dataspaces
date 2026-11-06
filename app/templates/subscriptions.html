@@ -1,28 +1,35 @@
 {% extends "base.html" %}
 {% block title %}Assinaturas{% endblock %}
 {% block content %}
-<h1>Contratar uma API</h1>
-<p>Saldo: {{ credit_balance }} créditos</p>
+<header class="page-head">
+    <h1 class="page-title">Contratar uma API</h1>
+    <p>Saldo: {{ credit_balance }} créditos</p>
+</header>
 {% if not can_subscribe %}
 <div class="alert alert-error" role="alert">{{ message }}</div>
 {% else %}
-{% for api in apis %}
-<section class="card">
-    <h2>{{ api.name }}{% if api.id == selected_id %} <small>(Selecionada)</small>{% endif %}</h2>
-    <p>{{ api.description }} Fornecedor: {{ api.provider_name }}</p>
-    <form method="post" action="{{ url_for('subscriptions.create') }}">
-        <input type="hidden" name="api_id" value="{{ api.id }}">
-        <label for="plan-{{ api.id }}">Plano</label>
-        <select id="plan-{{ api.id }}" name="plan_id" required>
-            {% for plan in plans %}
-            <option value="{{ plan.id }}">{{ plan.name }} — {{ plan.subscription_price_credits }} créditos + {{ plan.request_price_credits }} por requisição</option>
-            {% endfor %}
-        </select>
-        <button class="button" type="submit">Contratar</button>
-    </form>
-</section>
-{% else %}
-<p>Nenhuma API disponível para assinatura.</p>
-{% endfor %}
+<div class="cells">
+    {% for api in apis %}
+    <section class="cell">
+        <p class="label muted">{{ api.provider_name }}</p>
+        <h2>{{ api.name }}{% if api.id == selected_id %} <small class="label">(Selecionada)</small>{% endif %}</h2>
+        <p>{{ api.description }}</p>
+        <form method="post" action="{{ url_for('subscriptions.create') }}">
+            <input type="hidden" name="api_id" value="{{ api.id }}">
+            <label for="plan-{{ api.id }}">Plano</label>
+            <select id="plan-{{ api.id }}" name="plan_id" required>
+                {% for plan in plans %}
+                <option value="{{ plan.id }}">{{ plan.name }} — {{ plan.subscription_price_credits }} créditos + {{ plan.request_price_credits }} por requisição</option>
+                {% endfor %}
+            </select>
+            <div class="actions form-actions">
+                <button class="button" type="submit">Contratar</button>
+            </div>
+        </form>
+    </section>
+    {% else %}
+    <p class="cell">Nenhuma API disponível para assinatura.</p>
+    {% endfor %}
+</div>
 {% endif %}
 {% endblock %}
