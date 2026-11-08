@@ -1,0 +1,26 @@
+# Checklist final
+
+- [ ] `.env` não está versionado.
+- [ ] O schema e o seed executam em um MySQL local vazio.
+- [ ] O administrador e as duas organizações de demonstração entram com e-mail e senha.
+- [ ] As duas organizações possuem DID e VC válidos.
+- [ ] Cada organização fornece uma API e consome a API da outra.
+- [ ] Um cadastro novo fica pendente, é aprovado pelo administrador e recebe VC de um ano.
+- [ ] Um cadastro rejeitado mostra o motivo no login.
+- [ ] Uma fornecedora aprovada aparece no catálogo e sua API pode ser assinada e consumida.
+- [ ] Plano simples bloqueia dados premium.
+- [ ] Plano premium permite dados básicos e premium.
+- [ ] Assinar debita a taxa do plano do consumidor e credita a fornecedora (100 e 250 créditos).
+- [ ] Cada requisição debita 5 (simples) ou 2 (premium) créditos e credita a fornecedora.
+- [ ] Sem saldo, a assinatura é recusada e a API responde 402 sem entregar dados.
+- [ ] O seed começa com TransLog 1000 e CargaCerta 120 créditos, e uma organização nova aprovada recebe 300.
+- [ ] A recarga por PIX simulado credita um dos pacotes (500, 1000 ou 2500) e recusa pacote adulterado.
+- [ ] Cada recarga é confirmada uma única vez, inclusive com duplo clique.
+- [ ] A cobrança PIX expira em 15 minutos e não credita depois disso.
+- [ ] O extrato é paginado (20 por página) e responde 400 ou 404 para página inválida.
+- [ ] O `balance` da resposta da API é igual ao `balance_after` do extrato.
+- [ ] Para toda organização, o saldo é igual à soma do extrato.
+- [ ] Assinatura, consumo e total aparecem no resumo, em créditos.
+- [ ] Testes automatizados passam.
+- [ ] Diagramas UML representam o sistema implementado.
+- [ ] O roteiro de demonstração foi executado do início ao fim.

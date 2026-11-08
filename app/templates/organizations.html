@@ -1,0 +1,26 @@
+{% extends "base.html" %}
+{% block title %}Organizações{% endblock %}
+{% block content %}
+<header class="page-head">
+    <h1 class="page-title">Organizações do Data Space</h1>
+    <p>Organizações aprovadas, com o setor, o papel no Data Space e as APIs que publicam.</p>
+</header>
+<section class="cells">
+    {% for organization in organizations %}
+    <article class="cell">
+        <h2>{{ organization.name }}</h2>
+        {% if organization.description %}<p class="muted">{{ organization.description }}</p>{% endif %}
+        <dl class="facts">
+            <div><dt class="label">Setor</dt><dd>{{ sectors[organization.sector] }}</dd></div>
+            <div><dt class="label">Papel</dt><dd>{{ roles[organization.role] }}</dd></div>
+            <div><dt class="label">Publica</dt><dd>{{ organization.api_count }} {{ 'API' if organization.api_count == 1 else 'APIs' }}</dd></div>
+        </dl>
+        <div class="actions">
+            <a class="button button-secondary" href="{{ url_for('organizations.show', organization_id=organization.id) }}">Ver detalhes</a>
+        </div>
+    </article>
+    {% else %}
+    <p class="cell">Nenhuma organização ativa no momento.</p>
+    {% endfor %}
+</section>
+{% endblock %}

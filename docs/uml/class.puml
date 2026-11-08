@@ -1,0 +1,106 @@
+@startuml
+class Organization {
+  id
+  name
+  cnpj
+  email
+  password_hash
+  did
+  sector
+  role
+  contact_name
+  description
+  website
+  status
+  rejection_reason
+  credit_balance
+  created_at
+}
+class Admin {
+  id
+  name
+  email
+  password_hash
+}
+class VerifiableCredential {
+  issuer_did
+  subject_did
+  role_provider
+  role_consumer
+  issued_at
+  expires_at
+  status
+}
+class ApiProduct {
+  name
+  slug
+  description
+  basic_response
+  premium_response
+  policy_purpose
+  policy_allows_redistribution
+  policy_retention_days
+  policy_notes
+}
+class Plan {
+  code
+  name
+  subscription_price_credits
+  request_price_credits
+  max_access_level
+}
+class CreditTransaction {
+  amount
+  type
+  description
+  balance_after
+  created_at
+}
+class PixCharge {
+  code
+  credits
+  amount_usd
+  status
+  created_at
+  expires_at
+  paid_at
+}
+class Subscription {
+  status
+  started_at
+}
+class ApiRequest {
+  access_level
+  endpoint
+  credits
+  success
+  requested_at
+}
+
+Organization "1" -- "0..1" VerifiableCredential : recebe na aprovação
+Organization "1" -- "0..*" ApiProduct : fornece
+Organization "1" -- "0..*" CreditTransaction : extrato
+Organization "1" -- "0..*" PixCharge : recarrega
+Organization "1" -- "0..*" Subscription : contrata
+ApiProduct "1" -- "0..*" Subscription
+Plan "1" -- "0..*" Subscription
+Subscription "1" -- "0..*" ApiRequest
+Admin ..> Organization : aprova ou rejeita
+
+note right of Organization
+  role: consumer, provider ou both
+  status: pending, active ou rejected
+  credit_balance é igual à soma do extrato
+end note
+
+note right of CreditTransaction
+  type: bonus, top_up, subscription,
+  request ou earning
+  amount positivo = entrada, negativo = saída
+end note
+
+note right of PixCharge
+  status: pending, paid ou expired
+  vale 15 minutos; confirma uma única vez
+end note
+@enduml

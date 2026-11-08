@@ -1,0 +1,13 @@
+{% extends "base.html" %}
+{% block title %}Erro{% endblock %}
+{% block content %}
+<header class="page-head">
+    <h1 class="page-title">Não foi possível concluir a operação</h1>
+</header>
+<section class="panel panel-narrow">
+    <p>{{ message }}</p>
+    <div class="actions form-footer">
+        <a class="button" href="{{ url_for('main.home') }}">Voltar ao início</a>
+    </div>
+</section>
+{% endblock %}

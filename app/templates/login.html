@@ -1,0 +1,22 @@
+{% extends "base.html" %}
+{% block title %}Entrar{% endblock %}
+{% block content %}
+<section class="split">
+    <div class="split-side on-dark">
+        <h1>Entrar</h1>
+        <p>Use o e-mail corporativo cadastrado. O acesso só é liberado depois que o administrador aprova o cadastro da organização.</p>
+    </div>
+    <div class="split-form">
+        <form method="post">
+            <label for="email">E-mail</label>
+            <input id="email" name="email" type="email" autocomplete="email" required>
+            <label for="password">Senha</label>
+            <input id="password" name="password" type="password" autocomplete="current-password" required>
+            <div class="actions form-footer">
+                <button class="button" type="submit">Entrar</button>
+                <a class="button button-secondary" href="{{ url_for('organizations.new') }}">Registre-se</a>
+            </div>
+        </form>
+    </div>
+</section>
+{% endblock %}

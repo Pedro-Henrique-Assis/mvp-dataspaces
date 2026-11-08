@@ -1,0 +1,71 @@
+{% extends "base.html" %}
+{% block title %}Aprovações{% endblock %}
+{% block content %}
+<header class="page-head">
+    <h1 class="page-title">Cadastros de organizações</h1>
+    <p>Confira os dados, a API e a política de uso antes de aprovar. A aprovação emite DID e credencial válidos por um ano.</p>
+</header>
+<nav class="status-tabs label" aria-label="Filtro de status">
+    {% for value, label in [('pending', 'Pendentes'), ('active', 'Ativas'), ('rejected', 'Rejeitadas')] %}
+    {% if value == status %}<strong aria-current="page">{{ label }}</strong>{% else %}<a href="{{ url_for('admin.organizations', status=value) }}">{{ label }}</a>{% endif %}
+    {% endfor %}
+</nav>
+
+{% for organization in organizations %}
+<section class="panel">
+    <h2>{{ organization.name }}</h2>
+    {% if organization.description %}<p class="muted">{{ organization.description }}</p>{% endif %}
+    <dl class="facts">
+        <div><dt class="label">CNPJ</dt><dd>{{ organization.cnpj }}</dd></div>
+        <div><dt class="label">E-mail</dt><dd>{{ organization.email }}</dd></div>
+        <div><dt class="label">Setor</dt><dd>{{ organization.sector }}</dd></div>
+        <div><dt class="label">Papel</dt><dd>{{ organization.role }}</dd></div>
+        <div><dt class="label">Responsável</dt><dd>{{ organization.contact_name }}</dd></div>
+        {% if organization.website %}<div><dt class="label">Site</dt><dd>{{ organization.website }}</dd></div>{% endif %}
+    </dl>
+    {% if organization.rejection_reason %}
+    <div class="alert alert-error section">Motivo da rejeição: {{ organization.rejection_reason }}</div>
+    {% endif %}
+
+    {% for api in organization.apis %}
+    <div class="form-section">
+        <h3>{{ api.name }}</h3>
+        <p>{{ api.description }}</p>
+        <dl class="facts">
+            <div><dt class="label">Finalidade</dt><dd>{{ api.policy_purpose }}</dd></div>
+            <div><dt class="label">Redistribuição</dt><dd>{{ 'Sim' if api.policy_allows_redistribution else 'Não' }}</dd></div>
+            <div><dt class="label">Retenção</dt><dd>{{ api.policy_retention_days }} dias</dd></div>
+            {% if api.policy_notes %}<div><dt class="label">Observações</dt><dd>{{ api.policy_notes }}</dd></div>{% endif %}
+        </dl>
+        <div class="form-grid section">
+            <div>
+                <p class="label muted">Resposta do plano básico</p>
+                <pre>{{ api.basic_pretty }}</pre>
+            </div>
+            <div>
+                <p class="label muted">Resposta do plano premium</p>
+                <pre>{{ api.premium_pretty }}</pre>
+            </div>
+        </div>
+    </div>
+    {% endfor %}
+
+    {% if organization.status == 'pending' %}
+    <div class="decision">
+        <form method="post" action="{{ url_for('admin.approve', organization_id=organization.id) }}">
+            <button class="button" type="submit">Aprovar</button>
+        </form>
+        <form method="post" action="{{ url_for('admin.reject', organization_id=organization.id) }}">
+            <label for="reason-{{ organization.id }}">Motivo da rejeição</label>
+            <div class="actions">
+                <input id="reason-{{ organization.id }}" name="reason" maxlength="255" required>
+                <button class="button button-secondary" type="submit">Rejeitar</button>
+            </div>
+        </form>
+    </div>
+    {% endif %}
+</section>
+{% else %}
+<p class="panel">Nenhum cadastro nesta lista.</p>
+{% endfor %}
+{% endblock %}

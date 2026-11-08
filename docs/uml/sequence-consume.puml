@@ -1,0 +1,50 @@
+@startuml
+actor Consumidor
+participant "Interface Web" as UI
+participant "Flask" as App
+database "MySQL" as DB
+
+Consumidor -> UI: informa e-mail e senha
+UI -> App: POST /login
+App -> DB: busca administrador ou organização pelo e-mail
+DB --> App: dados da conta
+App -> App: confere a senha e o status do cadastro
+App -> DB: busca a VC da organização
+DB --> App: VC
+App -> App: valida emissor, titular e validade
+App --> UI: sessão válida
+
+Consumidor -> UI: solicita dados premium
+UI -> App: GET /api/v1/apis/entregas/data?level=premium
+App -> DB: busca a API e o status da fornecedora
+DB --> App: API
+App -> App: valida a VC com papel de consumidora
+App -> DB: busca assinatura ativa
+DB --> App: plano e permissões
+App -> App: autoriza o nível de acesso
+App -> DB: debita o consumidor se houver saldo
+alt saldo suficiente
+  App -> DB: credita a fornecedora, grava a requisição e o extrato (mesma transação)
+  DB --> App: balance_after da cobrança
+  App --> UI: 200 com JSON do plano, credits_charged e balance (saldo após a cobrança)
+else saldo insuficiente
+  DB --> App: saldo lido na mesma transação
+  App --> UI: 402 Créditos insuficientes (nada é gravado)
+end
+UI --> Consumidor: apresenta dados e saldo restante
+
+Consumidor -> UI: escolhe um pacote de recarga
+UI -> App: POST /credits/top-ups
+App -> DB: reaproveita a cobrança pendente ou grava uma nova (15 minutos)
+App --> UI: redireciona para a tela da cobrança
+
+Consumidor -> UI: confirma o pagamento simulado
+UI -> App: POST /credits/top-ups/{code}/confirmation
+App -> DB: marca pending como paid (UPDATE condicional)
+alt cobrança pendente e válida
+  App -> DB: credita o saldo e grava o extrato (top_up)
+  App --> UI: pagamento simulado confirmado
+else já confirmada ou expirada
+  App --> UI: aviso, sem creditar
+end
+@enduml

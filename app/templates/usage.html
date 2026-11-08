@@ -1,0 +1,25 @@
+{% extends "base.html" %}
+{% block title %}Consumo e cobrança{% endblock %}
+{% block content %}
+<header class="page-head">
+    <h1 class="page-title">Consumo e cobrança</h1>
+    <p>Quanto cada assinatura custou até agora: a taxa de contratação mais as requisições feitas.</p>
+</header>
+<div class="table-wrap">
+    <table class="table">
+        <tr><th>API</th><th>Plano</th><th class="num">Requisições</th><th class="num">Assinatura</th><th class="num">Requisições (créditos)</th><th class="num">Total</th></tr>
+        {% for item in items %}
+        <tr>
+            <td>{{ item.api_name }}</td>
+            <td>{{ item.plan_name }}</td>
+            <td class="num">{{ item.request_count }}</td>
+            <td class="num">{{ item.subscription_price_credits }} créditos</td>
+            <td class="num">{{ item.request_total }} créditos</td>
+            <td class="num"><strong>{{ item.subscription_price_credits + item.request_total }} créditos</strong></td>
+        </tr>
+        {% else %}
+        <tr><td class="table-empty" colspan="6">Nenhum consumo registrado.</td></tr>
+        {% endfor %}
+    </table>
+</div>
+{% endblock %}

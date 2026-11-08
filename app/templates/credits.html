@@ -1,0 +1,66 @@
+{% extends "base.html" %}
+{% block title %}Créditos{% endblock %}
+{% block content %}
+<header class="page-head">
+    <h1 class="page-title">Créditos</h1>
+    <p>Cada requisição e cada assinatura descontam do saldo. O que suas APIs recebem entra aqui também.</p>
+</header>
+
+<dl class="stats">
+    <div><dt class="label">Saldo atual</dt><dd>{{ credit_balance }} <small>créditos</small></dd></div>
+    <div><dt class="label">Total gasto</dt><dd>{{ totals.spent }} <small>créditos</small></dd></div>
+    <div><dt class="label">Total recebido</dt><dd>{{ totals.received }} <small>créditos</small></dd></div>
+</dl>
+
+<section class="section">
+    <div class="section-head">
+        <h2>Recarregar</h2>
+        <p class="notice-line">Pagamento via PIX simulado. Nenhum valor real é cobrado.</p>
+    </div>
+    <div class="cells">
+        {% for package in packages %}
+        <article class="cell">
+            <p class="package-amount">{{ package.credits }} créditos</p>
+            <p class="muted">US$ {{ '%.2f'|format(package.price) }}</p>
+            <div class="actions">
+                <form method="post" action="{{ url_for('credits.create_top_up') }}">
+                    <input type="hidden" name="package" value="{{ package.credits }}">
+                    <button class="button" type="submit">Recarregar</button>
+                </form>
+            </div>
+        </article>
+        {% endfor %}
+    </div>
+</section>
+
+<section class="section">
+    <div class="section-head">
+        <h2>Extrato</h2>
+    </div>
+    <div class="table-wrap">
+        <table class="table">
+            <tr><th>Data</th><th>Descrição</th><th>Tipo</th><th class="num">Valor</th><th class="num">Saldo após</th></tr>
+            {% for item in transactions %}
+            <tr>
+                <td class="nowrap">{{ item.created_at.strftime('%Y-%m-%d %H:%M') }}</td>
+                <td>{{ item.description }}</td>
+                <td>{{ type_labels[item.type] }}</td>
+                <td class="{{ 'credit-in' if item.amount > 0 else 'credit-out' }}">{{ '%+d'|format(item.amount) }}</td>
+                <td class="num">{{ item.balance_after }}</td>
+            </tr>
+            {% else %}
+            <tr><td class="table-empty" colspan="5">Nenhuma movimentação.</td></tr>
+            {% endfor %}
+        </table>
+    </div>
+    {% if total_pages > 1 %}
+    <nav class="pagination" aria-label="Páginas do extrato">
+        <p>Página {{ page }} de {{ total_pages }}</p>
+        <div class="actions">
+            {% if page > 1 %}<a class="button button-secondary" href="{{ url_for('credits.index', page=page - 1) }}">Anterior</a>{% endif %}
+            {% if page < total_pages %}<a class="button button-secondary" href="{{ url_for('credits.index', page=page + 1) }}">Próxima</a>{% endif %}
+        </div>
+    </nav>
+    {% endif %}
+</section>
+{% endblock %}
