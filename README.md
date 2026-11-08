@@ -97,6 +97,16 @@ SET GLOBAL event_scheduler = ON;
 
 O `SET GLOBAL` vale até reiniciar o servidor.
 
+### Termos de uso
+
+Os termos ficam em `/terms` (template `app/templates/terms.html`). O link do aceite, no cadastro, abre numa nova aba o PDF `app/static/docs/termos-de-uso.pdf`, gerado a partir dessa página. O botão **Enviar cadastro** só é habilitado depois que o aceite é marcado, e o servidor também recusa o cadastro sem aceite.
+
+Se o texto dos termos mudar, gere o PDF de novo com o app rodando (PowerShell, na pasta do projeto):
+
+```powershell
+& "C:\Program Files (x86)\Microsoft\Edge\Application\msedge.exe" --headless=new --no-pdf-header-footer --print-to-pdf="$PWD\app\static\docs\termos-de-uso.pdf" http://127.0.0.1:5000/terms
+```
+
 ## Como executar localmente
 
 ### Pré-requisitos

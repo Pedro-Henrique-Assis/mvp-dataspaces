@@ -299,6 +299,7 @@ code, pre { font-family: var(--font-code); }
     line-height: .92;
     margin: 0 0 var(--space-3);
     text-transform: uppercase;
+    text-wrap: balance;
 }
 
 .page-head p { color: var(--muted); max-width: 64ch; margin: 0; }
@@ -389,6 +390,16 @@ code, pre { font-family: var(--font-code); }
 }
 
 .button:hover { background: var(--white); color: var(--ink); }
+
+.button:disabled,
+.button:disabled:hover {
+    background: var(--line);
+    border-color: var(--line);
+    color: var(--muted);
+    cursor: not-allowed;
+}
+
+.form-hint { color: var(--muted); font-size: var(--text-sm); margin: var(--space-2) 0 0; }
 
 .button-secondary { background: transparent; color: var(--ink); }
 .button-secondary:hover { background: var(--ink); color: var(--white); }
@@ -746,6 +757,51 @@ pre {
 }
 
 .footer-inner p { margin: 0; }
+.footer-inner a { color: var(--white); }
+
+/* Termos de uso */
+
+.terms { display: grid; gap: var(--space-6); grid-template-columns: 1fr; }
+
+.terms-index {
+    background: var(--white);
+    border: 1px solid var(--ink);
+    padding: var(--space-5);
+}
+
+.terms-index ol { margin: var(--space-2) 0 0; padding-left: var(--space-5); }
+.terms-index a { align-items: center; display: inline-flex; min-height: 44px; }
+
+.clauses {
+    border-left: 1px solid var(--ink);
+    border-top: 1px solid var(--ink);
+    counter-reset: clause;
+    list-style: none;
+    margin: 0;
+    padding: 0;
+}
+
+.clauses li {
+    background: var(--white);
+    border-bottom: 1px solid var(--ink);
+    border-right: 1px solid var(--ink);
+    counter-increment: clause;
+    padding: var(--space-5);
+    scroll-margin-top: var(--space-5);
+}
+
+.clauses h2::before {
+    content: counter(clause, decimal-leading-zero);
+    display: block;
+    font-family: var(--font-display);
+    font-size: var(--text-2xl);
+    font-weight: 800;
+    line-height: 1;
+    margin-bottom: var(--space-2);
+}
+
+.clauses p { max-width: 72ch; }
+.clauses p:last-child { margin-bottom: 0; }
 .footer-inner strong { color: var(--white); font-family: var(--font-display); font-size: var(--text-lg); text-transform: uppercase; }
 
 /* Telas maiores */
@@ -766,6 +822,23 @@ pre {
 
 @media (min-width: 1100px) {
     .steps { grid-template-columns: repeat(4, 1fr); }
+    .terms { grid-template-columns: 260px 1fr; align-items: start; }
+    .terms-index { position: sticky; top: var(--space-5); }
+}
+
+@page { size: A4; margin: 14mm 12mm; }
+
+@media print {
+    * { -webkit-print-color-adjust: exact; print-color-adjust: exact; }
+    body { background: var(--white); display: block; min-height: 0; }
+    .site-header, .no-print { display: none !important; }
+    .alert-info { border-left-color: var(--ink); border-left-width: 1px; }
+    .page { padding: 0; }
+    .page-title { font-size: 3rem; }
+    .terms { display: block; }
+    .clauses { border: 0; }
+    .clauses li { border: 1px solid var(--ink); break-inside: avoid; margin-top: -1px; padding: var(--space-4) var(--space-5); }
+    .site-footer { display: none; }
 }
 
 @media (prefers-reduced-motion: reduce) {
