@@ -27,6 +27,16 @@ class RegistrationFormTest(unittest.TestCase):
                       "policy_purpose", "policy_allows_redistribution", "policy_retention_days", "policy_notes"]:
             self.assertIn(f'name="{field}"', html)
 
+    def test_terms_link_opens_pdf_in_new_tab(self):
+        html = self.client.get("/organizations/new").get_data(as_text=True)
+        self.assertIn('<a href="/static/docs/termos-de-uso.pdf" target="_blank" rel="noopener">termos de uso do Data Space</a>', html)
+
+    def test_submit_button_is_tied_to_terms_checkbox(self):
+        html = self.client.get("/organizations/new").get_data(as_text=True)
+        self.assertIn('id="accepted_terms"', html)
+        self.assertIn('id="submit-registration"', html)
+        self.assertIn("submitButton.disabled = !terms.checked", html)
+
     def test_login_page_links_to_registration(self):
         html = self.client.get("/login").get_data(as_text=True)
         self.assertIn("Registre-se", html)

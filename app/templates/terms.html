@@ -1,0 +1,85 @@
+{% extends "base.html" %}
+{% block title %}Termos de uso — Data Space MVP{% endblock %}
+{% block content %}
+<header class="page-head">
+    <h1 class="page-title">Termos de uso do Data Space</h1>
+    <p>Versão 1.0, atualizada em 8 de novembro de 2026. Estes termos valem para todas as organizações cadastradas na plataforma.</p>
+    <div class="actions form-actions no-print">
+        <a class="button" href="{{ url_for('static', filename='docs/termos-de-uso.pdf') }}" target="_blank" rel="noopener">Abrir PDF</a>
+    </div>
+</header>
+
+<div class="alert alert-info" role="note">Este Data Space é um projeto acadêmico da disciplina de Engenharia de Software. As organizações, os dados e os pagamentos são simulados.</div>
+
+<div class="terms">
+    <nav class="terms-index no-print" aria-label="Cláusulas">
+        <p class="label muted">Cláusulas</p>
+        <ol>
+            <li><a href="#objeto">Objeto</a></li>
+            <li><a href="#cadastro">Cadastro e aprovação</a></li>
+            <li><a href="#credencial">Identidade e credencial</a></li>
+            <li><a href="#papeis">Papéis no Data Space</a></li>
+            <li><a href="#apis">Publicação de APIs</a></li>
+            <li><a href="#uso">Uso dos dados</a></li>
+            <li><a href="#creditos">Créditos e cobrança</a></li>
+            <li><a href="#privacidade">Dados pessoais</a></li>
+            <li><a href="#suspensao">Suspensão e encerramento</a></li>
+            <li><a href="#responsabilidade">Responsabilidade</a></li>
+            <li><a href="#alteracoes">Alterações</a></li>
+        </ol>
+    </nav>
+
+    <ol class="clauses">
+        <li id="objeto">
+            <h2>Objeto</h2>
+            <p>O Data Space é um ambiente em que organizações de logística e transporte publicam APIs de dados, assinam os dados umas das outras e pagam cada consulta com créditos. Estes termos definem as regras de participação, de troca de dados e de cobrança.</p>
+        </li>
+        <li id="cadastro">
+            <h2>Cadastro e aprovação</h2>
+            <p>A organização se cadastra com razão social, CNPJ válido, e-mail corporativo, responsável e papel no Data Space. As informações devem ser verdadeiras e mantidas atualizadas.</p>
+            <p>Todo cadastro fica pendente até ser analisado pelo administrador, que pode aprovar ou rejeitar informando o motivo. Uma organização rejeitada não pode se cadastrar de novo com o mesmo e-mail ou CNPJ.</p>
+        </li>
+        <li id="credencial">
+            <h2>Identidade e credencial</h2>
+            <p>Cada organização recebe um identificador descentralizado (DID). Na aprovação, a autoridade do Data Space emite uma credencial verificável (VC) que atesta os papéis da organização e vale por um ano.</p>
+            <p>Com a credencial expirada, a organização não consegue entrar na plataforma nem consultar as APIs assinadas.</p>
+        </li>
+        <li id="papeis">
+            <h2>Papéis no Data Space</h2>
+            <p>A organização pode ser consumidora, fornecedora ou ambas. Consumidoras assinam APIs e fazem requisições. Fornecedoras publicam APIs e recebem os créditos pagos pelas consultas. Uma organização não pode assinar a própria API.</p>
+        </li>
+        <li id="apis">
+            <h2>Publicação de APIs</h2>
+            <p>A fornecedora descreve a API e informa uma resposta de exemplo para cada plano. O plano premium sempre entrega todos os campos do plano básico e pelo menos um a mais.</p>
+            <p>A fornecedora é responsável pela legalidade, pela exatidão e pelo direito de compartilhar os dados que publica.</p>
+        </li>
+        <li id="uso">
+            <h2>Uso dos dados</h2>
+            <p>Cada API tem uma política de uso definida pela fornecedora, com a finalidade permitida, a autorização ou não de redistribuição e o prazo de retenção. A consumidora se compromete a usar os dados somente dentro dessa política.</p>
+            <p>Os dados recebidos não podem ser revendidos nem repassados a terceiros quando a política não permitir redistribuição, e devem ser descartados ao fim do prazo de retenção.</p>
+        </li>
+        <li id="creditos">
+            <h2>Créditos e cobrança</h2>
+            <p>As operações são pagas em créditos. Ao contratar um plano, a taxa de assinatura é descontada uma única vez, e cada requisição desconta o preço do plano. Os valores vão integralmente para a fornecedora da API.</p>
+            <p>Sem créditos suficientes, a contratação e as requisições são recusadas. Requisições recusadas não são cobradas.</p>
+            <p>A recarga é feita por PIX simulado: nenhum valor real é cobrado, e cada cobrança vale 15 minutos e só pode ser confirmada uma vez.</p>
+        </li>
+        <li id="privacidade">
+            <h2>Dados pessoais</h2>
+            <p>A plataforma guarda apenas os dados necessários para identificar a organização e o responsável. Senhas são armazenadas de forma cifrada. O tratamento de dados pessoais segue os princípios da Lei Geral de Proteção de Dados (Lei nº 13.709/2018).</p>
+        </li>
+        <li id="suspensao">
+            <h2>Suspensão e encerramento</h2>
+            <p>O administrador pode suspender uma organização que descumpra estes termos ou a política de uso de alguma API, com perda do acesso às assinaturas enquanto durar a suspensão.</p>
+        </li>
+        <li id="responsabilidade">
+            <h2>Responsabilidade</h2>
+            <p>A plataforma intermedia o acesso aos dados e não garante o conteúdo publicado pelas fornecedoras. Por se tratar de um projeto acadêmico, o serviço é oferecido sem garantia de disponibilidade.</p>
+        </li>
+        <li id="alteracoes">
+            <h2>Alterações</h2>
+            <p>Estes termos podem ser atualizados. A versão em vigor fica sempre disponível nesta página, com a data da última atualização.</p>
+        </li>
+    </ol>
+</div>
+{% endblock %}

@@ -110,8 +110,9 @@
     </fieldset>
 
     <div class="form-footer">
-        <label class="check"><input type="checkbox" name="accepted_terms" {{ 'checked' if form.get('accepted_terms') }}> Aceito os termos de uso do Data Space</label>
-        <button class="button" type="submit">Enviar cadastro</button>
+        <label class="check"><input type="checkbox" id="accepted_terms" name="accepted_terms" {{ 'checked' if form.get('accepted_terms') }}> <span>Aceito os <a href="{{ url_for('static', filename='docs/termos-de-uso.pdf') }}" target="_blank" rel="noopener">termos de uso do Data Space</a></span></label>
+        <button class="button" id="submit-registration" type="submit" aria-describedby="terms-hint">Enviar cadastro</button>
+        <p class="form-hint" id="terms-hint" hidden>Marque o aceite dos termos para enviar.</p>
     </div>
 </form>
 <script>
@@ -126,5 +127,15 @@
         radio.addEventListener("change", toggleApiFields);
     });
     toggleApiFields();
+
+    var terms = document.getElementById("accepted_terms");
+    var submitButton = document.getElementById("submit-registration");
+    var termsHint = document.getElementById("terms-hint");
+    function toggleSubmit() {
+        submitButton.disabled = !terms.checked;
+        termsHint.hidden = terms.checked;
+    }
+    terms.addEventListener("change", toggleSubmit);
+    toggleSubmit();
 </script>
 {% endblock %}

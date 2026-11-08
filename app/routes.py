@@ -25,6 +25,11 @@ def dashboard():
     )
 
 
+@main_blueprint.get("/terms")
+def terms():
+    return render_template("terms.html")
+
+
 @main_blueprint.get("/health")
 def health_check():
     return jsonify({"status": "ok"})
